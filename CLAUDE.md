@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Comments and documentation are written in English only — doc comments,
   README, changelog, and inline comments alike.
 - Never wire a README into rustdoc (`#![doc = include_str!("../README.md")]`).
-  The README's badges and contract tables do not survive rustdoc rendering.
+  The README's badges and relative links do not survive rustdoc rendering.
   Crate documentation lives in `//!` and `///` comments; the README repeats what
   a reader on crates.io needs.
 - No breaking changes. Public API work is additive: adding items, trait
@@ -15,6 +15,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   stop and raise it rather than altering an existing signature or behavior.
 - Every crate README opens with the badge block: crates.io, docs.rs, CI,
   license, and rustc.
+- Crate READMEs use no Markdown tables; crates.io renders them badly. Traits,
+  types and features are flat one-line bullets (`` `Item` — what it does. ``),
+  with any further detail in the paragraph below the list. Benchmark results
+  and how to reproduce them live in the crate's `BENCHES.md`, which is in the
+  `include` list, and the README links to it. `BENCHES.md` is read on GitHub,
+  so its results may use tables.
 
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
@@ -71,7 +77,7 @@ than 1.85.
 Documentation is part of the contract: crates use `#![deny(missing_docs)]`,
 doctests carry the executable examples, and CI runs `cargo doc` with
 `RUSTDOCFLAGS: -D warnings`, with and without `--all-features`. An additive
-public API change belongs in the crate README's contract tables — "Traits" and
+public API change belongs in the crate README's contract lists — "Traits" and
 "Types" in `tc_block_cipher/README.md`, "Types" in `tc_aes/README.md` — and in
 the changelog, not only in the code.
 

@@ -25,21 +25,20 @@ select an earlier release that builds with an older toolchain.
 
 ## Types
 
-| Type | Availability | Timing |
-| --- | --- | --- |
-| `AesEngine` | Always | Dispatches once at construction: `AesRustCryptoEngine` with the `rustcrypto` feature, otherwise `AesX86Engine` where AES-NI is detected, otherwise `AesTableEngine`. Constant time unless it falls back to the table engine |
-| `AesX86Engine` | x86 and x86-64; `new()` returns `None` without AES-NI | Constant time, including the key schedule |
-| `AesRustCryptoEngine` | `rustcrypto` feature | Constant time on every backend the `aes` crate selects |
-| `AesTableEngine` | Always | Variable time: key- and data-dependent T-table lookups. The key schedule is constant time |
-| `AesLightEngine` | Always | Variable time: key- and data-dependent S-box lookups in both the key schedule and the rounds |
+- `AesEngine` — picks the safest engine at construction; constant time unless
+  it falls back to the table engine.
+- `AesX86Engine` — AES-NI on x86 and x86-64; constant time.
+- `AesRustCryptoEngine` (`rustcrypto`) — RustCrypto's `aes`; constant time.
+- `AesTableEngine` — portable T-tables; variable time.
+- `AesLightEngine` — portable, smaller tables; variable time.
 
-| Item | Contract |
-| --- | --- |
-| `BlockCipherInit::init` | Accepts any `KeyParams` holding 16, 24 or 32 bytes. Other lengths return `InitError::InvalidKeyLength` and keep the previous key and direction. Calling it again installs a new key or direction |
-| `BlockCipher::block_size` | Always 16 |
-| `BlockCipher::process_block` | Transforms the first 16 bytes of `input` into the first 16 of `output` and returns 16, leaving any output tail intact. Returns `BlockError::NotInitialised` before a key is installed and `BlockError::BufferTooShort` when either buffer is shorter than a block |
-| `Display` | Writes `ALGO_NAME` (`"AES"`) for every engine, key size and direction, without inspecting key material |
-| `ALGO_NAME`, `BLOCK_BYTES`, `KEY_BYTES` | `"AES"`, `16`, and `[16, 24, 32]` |
+Every engine takes a 16-, 24- or 32-byte key through any `KeyParams`; another
+length returns `InitError::InvalidKeyLength` and keeps the previous key.
+`process_block` transforms the first 16 bytes and returns 16, returning
+`BlockError::NotInitialised` before `init` and `BlockError::BufferTooShort` for
+a buffer shorter than a block. `Display` writes `"AES"` without inspecting key
+material. The constants `ALGO_NAME`, `BLOCK_BYTES` and `KEY_BYTES` hold
+`"AES"`, `16` and `[16, 24, 32]`.
 
 `AesEngine`, `AesTableEngine`, `AesLightEngine` and `AesRustCryptoEngine`
 implement `Default`; the last three have `const fn new`. `AesX86Engine::new`
@@ -48,10 +47,8 @@ returns an engine.
 
 ## Features
 
-| Features | Support |
-| --- | --- |
-| None (default) | Core-only `no_std`: the dispatcher, the table and light engines, and `AesX86Engine` on x86 and x86-64 |
-| `rustcrypto` | All default support plus `AesRustCryptoEngine`, which `AesEngine` then always uses; adds the `aes` crate with its `zeroize` feature, and with it that crate's minimum Rust version |
+- `rustcrypto` (off by default) — adds `AesRustCryptoEngine`, which `AesEngine`
+  then always uses; pulls in the `aes` crate and its minimum Rust version.
 
 ## Usage
 
@@ -114,61 +111,11 @@ no padding, nonce management, mode of operation or authentication. Do not
 encrypt a message by independently encrypting each block; use an appropriate
 authenticated-encryption construction.
 
-## Single-block benchmark results
+## Benchmarks
 
-Measured on 2026-09-23 on the local Windows x86-64 host with AES-NI available,
-using Rust 1.98.0 and Cargo's optimized bench profile. The CPU model was not
-recorded. These results describe this host and run, not a cross-platform ranking.
-
-Each of the 24 cases used Criterion with a 3-second warm-up, a 15-second
-measurement window and 100 samples. Values below are Criterion's central time
-estimates, rounded to one decimal place.
-
-**Nanoseconds per 16-byte block; lower is better. Each cell is encryption /
-decryption.**
-
-| Engine | AES-128 | AES-192 | AES-256 |
-| --- | ---: | ---: | ---: |
-| `AesX86Engine` (AES-NI) | 12.1 / 10.2 | 12.0 / 10.4 | 13.4 / 11.6 |
-| `AesRustCryptoEngine` | 14.2 / 11.6 | 14.4 / 12.4 | 15.0 / 13.4 |
-| `AesTableEngine` | 70.5 / 77.3 | 81.1 / 87.8 | 91.5 / 101.3 |
-| `AesLightEngine` | 118.0 / 147.3 | 140.6 / 173.9 | 161.8 / 207.9 |
-
-AES-NI was fastest in this run, followed by RustCrypto, Table and Light.
-The measurements include each engine's `process_block` API overhead but exclude
-key setup, construction and final drop. They call the four engines directly,
-not the `AesEngine` dispatcher. Decryption uses ciphertext prepared before timing.
-
-These are single-block measurements, not multi-block parallel throughput or
-constant-time verification. Some samples were outliers; system load and CPU
-behaviour can affect small differences. The RustCrypto engine chooses its own
-backend; this benchmark does not report that internal selection.
-
-### Running the benchmarks
-
-Reproduce the four-engine single-block comparison:
-
-```powershell
-cargo bench -p tc_aes --bench aes --all-features --locked -- '^aes/(encrypt|decrypt)/(table|light|aes-ni|rustcrypto)/'
-```
-
-Run all benchmarks, including dispatcher and key setup measurements:
-
-```powershell
-cargo bench -p tc_aes --bench aes --all-features --locked
-```
-
-Setup benchmarks reinitialise an existing engine, including replacement of its
-previous key schedule. They exclude construction and final drop. AES-NI cases
-are skipped when unavailable; RustCrypto cases require the `rustcrypto` feature.
-The full suite takes roughly 18 minutes on a host running all 60 cases, plus
-compilation and analysis time.
-
-For a smoke test without performance measurement:
-
-```powershell
-cargo bench -p tc_aes --bench aes --all-features --locked -- --test
-```
+Single-block timings for every engine, and the commands to reproduce them, are
+in [BENCHES.md](BENCHES.md). In short, AES-NI and RustCrypto were several times
+faster than the table and light engines on an x86-64 host with AES-NI.
 
 ## Validation
 
@@ -212,8 +159,8 @@ cargo publish -p tc_block_cipher -p tc_aes --dry-run --locked
 ```
 
 The archive includes both license texts, this README, the changelog, the
-source, the integration test and the benchmark. It must not include `target/`
-or other build artifacts.
+benchmark results, the source, the integration test and the benchmark. It must
+not include `target/` or other build artifacts.
 
 ## License
 

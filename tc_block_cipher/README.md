@@ -21,12 +21,10 @@ Requires Rust 1.85 or later (edition 2024).
 
 ## Traits
 
-| Item | Contract |
-| --- | --- |
-| `BlockCipherInit<P>::init(&mut self, direction, &P)` | Validates and installs the parameters `P` for one direction. `P` may be any `KeyParams` container or an engine-specific parameter type. Failures use the associated `Error` |
-| `BlockCipher::block_size(&self)` | The number of bytes in one block |
-| `BlockCipher::process_block(&mut self, input, output)` | Transforms one block from the front of `input` into the front of `output` and returns the bytes written. Failures use the associated `Error` |
-| `KeyParams::key(&self)` | Borrows the key bytes; imposes no ownership or wiping policy |
+- `BlockCipherInit<P>` — `init` installs a key, or engine-specific parameters,
+  for one direction.
+- `BlockCipher` — `block_size` and `process_block` transform one block.
+- `KeyParams` — `key` borrows the key bytes.
 
 Initialization and processing are separate traits so generic callers can state
 exactly which capabilities they need. Accepted key lengths, the handling of
@@ -35,14 +33,11 @@ every timing guarantee belong to the engine, not to these traits.
 
 ## Types
 
-| Type | Contract |
-| --- | --- |
-| `CipherDirection` | `Encrypt` or `Decrypt`, selected at initialization |
-| `InitError` | Reusable initialization failures: `InvalidKeyLength(bytes)`, `InvalidEffectiveKeyBits(bits)`, `InvalidSBoxLength(bytes)`, `InvalidTweakLength(bytes)`, `InvalidRounds(count)` |
-| `BlockError` | Reusable processing failures: `NotInitialised`, `BufferTooShort` |
-| `KeyRef<'a>` | Borrows a key slice; copies nothing and wipes nothing |
-| `KeyFixed<const N: usize>` | Owns a `[u8; N]` without an allocator and wipes it on drop |
-| `KeyOwned` (`alloc`) | Takes ownership of a `Vec<u8>` without cloning it and wipes it on drop |
+- `CipherDirection` — `Encrypt` or `Decrypt`.
+- `InitError`, `BlockError` — reusable initialization and processing errors.
+- `KeyRef` — borrows a key slice.
+- `KeyFixed<N>` — owns a key array and wipes it on drop.
+- `KeyOwned` (`alloc`) — owns a key vector and wipes it on drop.
 
 Both error enums are `#[non_exhaustive]` and implement `Clone`, `Copy`, `Debug`,
 `PartialEq`, `Eq`, `Display` and `core::error::Error`. Engines may use them as
@@ -54,10 +49,7 @@ validates algorithm-specific key lengths; the receiving engine does.
 
 ## Features
 
-| Features | Support |
-| --- | --- |
-| None (default) | Core-only `no_std`: the traits, both error types, `CipherDirection`, `KeyRef` and `KeyFixed` |
-| `alloc` | All core-only support plus `KeyOwned`; enables `tc_zeroize/alloc` and still needs no `std` |
+- `alloc` (off by default) — adds `KeyOwned`; still `no_std`.
 
 ## Usage
 

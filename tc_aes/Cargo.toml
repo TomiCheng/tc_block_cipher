@@ -10,7 +10,7 @@ readme = "README.md"
 documentation = "https://docs.rs/tc_aes"
 keywords = ["aes", "block-cipher", "cryptography", "no-std", "aes-ni"]
 categories = ["cryptography", "no-std"]
-include = ["src/**", "tests/**", "benches/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+include = ["src/**", "tests/**", "benches/**", "README.md", "BENCHES.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
 [package.metadata.docs.rs]
 all-features = true

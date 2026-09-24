@@ -1,0 +1,12 @@
+[workspace]
+resolver = "3"
+members = ["tc_block_cipher", "tc_aes"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/TomiCheng/tc_block_cipher"
+
+[workspace.dependencies]
+criterion = "0.8.2"

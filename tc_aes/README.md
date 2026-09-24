@@ -18,7 +18,10 @@ x86 and x86-64 only, and on RustCrypto's [`aes`](https://crates.io/crates/aes)
 only with the default-off `rustcrypto` feature. The AES-NI engine confines its
 `unsafe` intrinsics to one module behind a detection token.
 
-Requires Rust 1.85 or later (edition 2024).
+Requires Rust 1.85 or later (edition 2024) for the default build. The optional
+`rustcrypto` feature follows the minimum Rust version of the `aes` crate
+instead: `aes` 0.9.3 requires Rust 1.89, and Cargo's MSRV-aware resolver can
+select an earlier release that builds with an older toolchain.
 
 ## Types
 
@@ -48,7 +51,7 @@ returns an engine.
 | Features | Support |
 | --- | --- |
 | None (default) | Core-only `no_std`: the dispatcher, the table and light engines, and `AesX86Engine` on x86 and x86-64 |
-| `rustcrypto` | All default support plus `AesRustCryptoEngine`, which `AesEngine` then always uses; adds the `aes` crate with its `zeroize` feature |
+| `rustcrypto` | All default support plus `AesRustCryptoEngine`, which `AesEngine` then always uses; adds the `aes` crate with its `zeroize` feature, and with it that crate's minimum Rust version |
 
 ## Usage
 

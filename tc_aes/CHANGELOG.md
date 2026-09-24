@@ -44,10 +44,10 @@ Initial release.
 
 ### Compatibility
 
-- Requires Rust 1.85 or later and uses Rust edition 2024. With `rustcrypto`,
-  Rust 1.85 through 1.88 need `aes` 0.9.2 or earlier, since 0.9.3 requires
-  Rust 1.89; Cargo's MSRV-aware resolver selects such a release for projects
-  that declare a `rust-version`.
+- Requires Rust 1.85 or later for the default build and uses Rust edition
+  2024. The `rustcrypto` feature is outside that guarantee and follows the
+  minimum Rust version of the `aes` crate, which is 1.89 for `aes` 0.9.3; a
+  later `aes` release may raise it without a `tc_aes` release.
 - Depends on `tc_block_cipher` 0.1 and `tc_zeroize` 0.1, on `tc_runtime` 0.1 on
   x86 and x86-64 only, and on `aes` 0.9 only with `rustcrypto`.
 - Without `rustcrypto`, `AesEngine` is constant time only where AES-NI is

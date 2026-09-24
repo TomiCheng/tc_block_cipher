@@ -33,10 +33,17 @@ time on its table and light engines. Keep the timing contract of each item
 stated in its doc comment, and do not let `AesEngine` select a variable-time
 engine where a constant-time one is available.
 
-The MSRV job only runs `cargo check` on Rust 1.85, because the `criterion`
-dev-dependency needs 1.86. Library dependencies must still build with 1.85;
-Cargo's MSRV-aware resolver reads the members' `rust-version` and keeps `aes`
-below 0.9.3, which requires 1.89.
+Rust 1.85 is guaranteed only where the workspace controls every crate: the
+default build and first-party features such as `alloc`, whose dependencies are
+all `tc_*` crates. A feature that enables a third-party crate (`rustcrypto`
+enables `aes`, 0.9.3 of which requires 1.89) follows that crate's MSRV, and
+dev-dependencies (`criterion` requires 1.86) are exempt. The MSRV job therefore
+runs `cargo check` on 1.85 for the guaranteed builds only; tests run on stable.
+`.cargo/config.toml` sets `incompatible-rust-versions = "allow"` so
+`Cargo.lock` tracks the latest releases and stable CI tests what current
+toolchains resolve. Adding a third-party dependency to a default build or a
+first-party feature hands the 1.85 guarantee to that crate; raise it before
+doing so.
 
 A crate depends on a workspace sibling through `path` plus `version`, so the
 workspace builds and tests against the local crate while the published package

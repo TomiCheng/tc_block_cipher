@@ -90,11 +90,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         env:
           RUSTUP_TOOLCHAIN: 1.85.0
-      # Libraries only: the criterion dev-dependency requires Rust 1.86, so
-      # tests run on stable. The MSRV-aware resolver keeps aes below 0.9.3,
-      # which requires Rust 1.89.
+      # Rust 1.85 covers the libraries with every first-party feature. The
+      # rustcrypto feature follows the aes crate's MSRV and dev-dependencies
+      # such as criterion are exempt, so tests run on stable only.
       - run: cargo +1.85.0 check --locked
-      - run: cargo +1.85.0 check --locked --all-features
+      - run: cargo +1.85.0 check --locked -p tc_block_cipher --features alloc
 
   quality:
     name: Format, Clippy, docs and package

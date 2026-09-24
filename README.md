@@ -25,6 +25,14 @@ crate implements it and documents its own key lengths and timing guarantees.
 Rust 1.85 or later, edition 2024. Every crate builds without `std` and
 reaches the heap only through `tc_block_cipher`'s default-off `alloc` feature.
 
+Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
+every build that uses only this workspace's crates and their `tc_*`
+dependencies. A feature that enables a third-party crate, such as `tc_aes`'s
+`rustcrypto`, follows that crate's minimum Rust version instead, and
+dev-dependencies used only by tests and benchmarks are exempt. The workspace
+lock tracks the latest dependency releases, so CI on stable tests what a user
+on a current toolchain resolves.
+
 ## Workspace checks
 
 ```text
@@ -38,8 +46,8 @@ cargo doc --locked --no-deps --all-features
 CI additionally runs these on Linux x64, i686 and ARM64, macOS ARM64, and
 Windows x64, tests the AES dispatcher with AES-NI detection disabled, checks
 the `wasm32-unknown-unknown` and `aarch64-unknown-none` targets and each
-crate's dependency set, pins an MSRV job to Rust 1.85.0, and verifies the
-package archives. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
+crate's dependency set, checks the build that Rust 1.85.0 covers, and verifies
+the package archives. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ## License
 

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["tc_block_cipher", "tc_aes"]
+members = ["tc_block_cipher", "tc_aes", "tc_des"]
 
 [workspace.package]
 edition = "2024"

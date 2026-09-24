@@ -39,6 +39,8 @@ Initial release.
   the table and RustCrypto engines on pseudorandom keys and blocks; a test that
   every engine API documents whether it is constant or variable time; and
   doctests for every engine.
+- Criterion benchmarks for key setup and single-block processing on the table
+  and RustCrypto engines, with results in `BENCHES.md`.
 
 ### Compatibility
 

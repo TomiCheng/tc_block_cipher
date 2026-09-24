@@ -10,7 +10,7 @@ readme = "README.md"
 documentation = "https://docs.rs/tc_des"
 keywords = ["des", "triple-des", "block-cipher", "cryptography", "no-std"]
 categories = ["cryptography", "no-std"]
-include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+include = ["src/**", "tests/**", "benches/**", "README.md", "BENCHES.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -23,4 +23,11 @@ rustcrypto = ["dep:des", "des/zeroize"]
 tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
 tc_zeroize = "0.1.0"
 des = { version = "0.9", optional = true }
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "des"
+harness = false
 

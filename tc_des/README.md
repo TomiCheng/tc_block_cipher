@@ -98,6 +98,11 @@ key buffer or copies left in registers and on the stack.
 This is a block-cipher primitive, not a message-encryption format. It supplies
 no padding, mode of operation or authentication.
 
+## Benchmarks
+
+Key setup and single-block timings for the table and RustCrypto engines, and
+the commands to reproduce them, are in [BENCHES.md](BENCHES.md).
+
 ## Validation
 
 The engines are tested against the standard DES vector, the FIPS 81 vector and
@@ -131,8 +136,8 @@ cargo publish -p tc_des --dry-run --locked
 ```
 
 The archive includes both license texts, this README, the changelog, the
-source and the integration tests. It must not include `target/` or other build
-artifacts.
+benchmark results, the source, the integration tests and the benchmark. It must
+not include `target/` or other build artifacts.
 
 ## License
 

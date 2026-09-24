@@ -14,6 +14,8 @@
 //! `DesEdeRustCryptoEngine` are available with the `rustcrypto` feature.
 
 #![no_std]
+#![deny(missing_docs)]
+#![forbid(unsafe_code)]
 
 mod cipher;
 mod engine;

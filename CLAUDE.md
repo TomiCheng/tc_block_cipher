@@ -25,21 +25,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
 `no_std` and needs no allocator by default. Features are default-off and
-additive: `alloc` on `tc_block_cipher`, `rustcrypto` on `tc_aes` and `tc_des`.
+additive: `alloc` on `tc_block_cipher` and `tc_block_modes`, `rustcrypto` on
+`tc_aes`, `tc_des` and `tc_aria`.
 `tc_block_cipher` depends on `tc_zeroize` alone; `tc_aes` adds
-`tc_block_cipher` and, on x86 targets only, `tc_runtime`; `tc_des` adds
-`tc_block_cipher` on every target. CI enforces each crate's default dependency
-set with `cargo tree` on the `wasm32-unknown-unknown`, `aarch64-unknown-none`
-and x86 targets. `tc_block_cipher` carries no algorithm knowledge: key lengths,
+`tc_block_cipher` and, on x86 targets only, `tc_runtime`; `tc_des`, `tc_aria`
+and `tc_block_modes` add `tc_block_cipher` on every target. CI enforces each
+crate's default dependency set with `cargo tree` on the
+`wasm32-unknown-unknown`, `aarch64-unknown-none` and x86 targets.
+`tc_block_cipher` carries no algorithm knowledge: key lengths,
 round counts, S-boxes and timing guarantees belong to the engine crates built
 on it, such as `tc_aes` and `tc_des`, never to `tc_block_cipher`.
 
 `tc_aes` is constant time on its AES-NI and RustCrypto engines and variable
-time on its table and light engines. Every `tc_des` engine is variable time;
-`tests/documentation.rs` there requires each engine declaration to say which.
-Keep the timing contract of each item stated in its doc comment, and do not
-let a dispatcher (`AesEngine`, `DesEngine`, `DesEdeEngine`) select a leakier
-engine where a less leaky one is available.
+time on its table and light engines. Every `tc_des` and `tc_aria` engine is
+variable time. `tc_block_modes` adds only data-independent work, so each mode
+is constant time exactly when its engine is. `tests/documentation.rs` in
+`tc_des`, `tc_aria` and `tc_block_modes` requires each declaration it scans
+to say which. Keep the timing contract of each item stated in its doc
+comment, and do not let a dispatcher (`AesEngine`, `DesEngine`,
+`DesEdeEngine`, `AriaEngine`) select a leakier engine where a less leaky one
+is available.
 
 Rust 1.85 is guaranteed only where the workspace controls every crate: the
 default build and first-party features such as `alloc`, whose dependencies are
@@ -80,8 +85,9 @@ Documentation is part of the contract: crates use `#![deny(missing_docs)]`,
 doctests carry the executable examples, and CI runs `cargo doc` with
 `RUSTDOCFLAGS: -D warnings`, with and without `--all-features`. An additive
 public API change belongs in the crate README's contract lists — "Traits" and
-"Types" in `tc_block_cipher/README.md`, "Types" in `tc_aes/README.md` and
-`tc_des/README.md` — and in the changelog, not only in the code.
+"Types" in `tc_block_cipher/README.md` and `tc_block_modes/README.md`,
+"Types" in `tc_aes/README.md`, `tc_des/README.md` and `tc_aria/README.md` —
+and in the changelog, not only in the code.
 
 Work happens on `feat/*` branches off `develop`; pull requests target `develop`,
 which merges to `main`. Commit messages use an imperative subject and a wrapped

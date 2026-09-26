@@ -1,0 +1,27 @@
+[package]
+name = "tc_block_modes"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "ECB, CBC, CFB, OFB and CTR block cipher modes of operation for engines implementing the tc_block_cipher traits."
+readme = "README.md"
+documentation = "https://docs.rs/tc_block_modes"
+keywords = ["block-cipher", "cbc", "ctr", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+alloc = ["tc_zeroize/alloc"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+tc_aes = { version = "0.1.0", path = "../tc_aes" }

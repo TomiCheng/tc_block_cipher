@@ -45,6 +45,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000"
 
 [[package]]
+name = "aria"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9bec52899928da457033f0a6ea707bd11a16f5642ef91ddfcd809cd30f824536"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -591,9 +600,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc_aria"
+version = "0.1.0"
+dependencies = [
+ "aria",
+ "criterion",
+ "tc_block_cipher",
+ "tc_zeroize",
+]
+
+[[package]]
 name = "tc_block_cipher"
 version = "0.1.0"
 dependencies = [
+ "tc_zeroize",
+]
+
+[[package]]
+name = "tc_block_modes"
+version = "0.1.0"
+dependencies = [
+ "tc_aes",
+ "tc_block_cipher",
  "tc_zeroize",
 ]
 

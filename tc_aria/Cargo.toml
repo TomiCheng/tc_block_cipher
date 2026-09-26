@@ -1,0 +1,32 @@
+[package]
+name = "tc_aria"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "ARIA-128, ARIA-192 and ARIA-256 block ciphers (RFC 5794) with table-based and RustCrypto engines."
+readme = "README.md"
+documentation = "https://docs.rs/tc_aria"
+keywords = ["aria", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "benches/**", "README.md", "BENCHES.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+rustcrypto = ["dep:aria", "aria/zeroize"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+aria = { version = "0.2", optional = true }
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "aria"
+harness = false

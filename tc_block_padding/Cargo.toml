@@ -1,0 +1,29 @@
+[package]
+name = "tc_block_padding"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "PKCS#7, ISO 7816-4, ANSI X9.23, TBC, zero-byte and ISO 10126 padding for block cipher modes."
+readme = "README.md"
+documentation = "https://docs.rs/tc_block_padding"
+keywords = ["padding", "pkcs7", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+rand_core = ["dep:rand_core"]
+
+[dependencies]
+rand_core = { version = "0.10.1", default-features = false, optional = true }
+
+[dev-dependencies]
+rand = "0.10.3"
+tc_aes = { version = "0.1.0", path = "../tc_aes" }
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_block_modes = { version = "0.1.0", path = "../tc_block_modes" }

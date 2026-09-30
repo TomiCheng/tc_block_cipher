@@ -1,0 +1,26 @@
+[package]
+name = "tc_rc_cipher"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "RC2, RC5 and RC6 block ciphers for legacy interoperability, with an optional RustCrypto RC2 engine."
+readme = "README.md"
+documentation = "https://docs.rs/tc_rc_cipher"
+keywords = ["rc2", "rc5", "rc6", "block-cipher", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+alloc = ["tc_zeroize/alloc"]
+rustcrypto = ["dep:rc2", "rc2/zeroize"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+rc2 = { version = "0.9", optional = true }

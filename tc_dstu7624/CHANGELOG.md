@@ -2,7 +2,7 @@
 
 All notable changes to `tc_dstu7624` are documented in this file.
 
-## 0.1.0 - Unreleased
+## 0.1.0 - 2026-09-30
 
 Initial release.
 

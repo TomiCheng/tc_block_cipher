@@ -1,0 +1,17 @@
+[package]
+name = "tc_dstu7624"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "DSTU 7624:2014 (Kalyna) block cipher with 128-, 256- and 512-bit blocks."
+readme = "README.md"
+documentation = "https://docs.rs/tc_dstu7624"
+keywords = ["dstu7624", "kalyna", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"

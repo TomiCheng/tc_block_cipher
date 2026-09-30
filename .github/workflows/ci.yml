@@ -119,7 +119,7 @@ jobs:
       - run: cargo doc --locked --no-deps --all-features
       # Packaged together so the engine and mode crates are verified against
       # this tc_block_cipher, not the release on crates.io.
-      - run: cargo package --locked -p tc_block_cipher -p tc_aes -p tc_des -p tc_aria -p tc_block_modes -p tc_block_padding -p tc_rc_cipher
+      - run: cargo package --locked -p tc_block_cipher -p tc_aes -p tc_des -p tc_aria -p tc_block_modes -p tc_block_padding -p tc_rc_cipher -p tc_dstu7624
         env:
           # Keep unpacked package manifests outside rust-cache's build tree.
           CARGO_TARGET_DIR: ${{ runner.temp }}/package
@@ -159,10 +159,12 @@ jobs:
             check 'tc_block_padding' -p tc_block_padding --target "$target"
             check 'tc_block_cipher tc_rc_cipher tc_zeroize' -p tc_rc_cipher --target "$target"
             check 'tc_block_cipher tc_rc_cipher tc_zeroize' -p tc_rc_cipher --target "$target" --features alloc
+            check 'tc_block_cipher tc_dstu7624 tc_zeroize' -p tc_dstu7624 --target "$target"
           done
-          # tc_runtime backs AES-NI detection on x86 targets only. DES, ARIA and
-          # the RC ciphers have no hardware backend, and the modes and paddings
-          # add none of their own, so those crates keep the same sets there.
+          # tc_runtime backs AES-NI detection on x86 targets only. DES, ARIA,
+          # the RC ciphers and Kalyna have no hardware backend, and the modes and
+          # paddings add none of their own, so those crates keep the same sets
+          # there.
           for target in x86_64-unknown-linux-gnu i686-unknown-linux-gnu; do
             check 'tc_aes tc_block_cipher tc_runtime tc_zeroize' -p tc_aes --target "$target"
             check 'tc_block_cipher tc_des tc_zeroize' -p tc_des --target "$target"
@@ -170,4 +172,5 @@ jobs:
             check 'tc_block_cipher tc_block_modes tc_zeroize' -p tc_block_modes --target "$target"
             check 'tc_block_padding' -p tc_block_padding --target "$target"
             check 'tc_block_cipher tc_rc_cipher tc_zeroize' -p tc_rc_cipher --target "$target"
+            check 'tc_block_cipher tc_dstu7624 tc_zeroize' -p tc_dstu7624 --target "$target"
           done

@@ -76,6 +76,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 
 [[package]]
+name = "camellia"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3ed33f9863ee76491bbe0d7e16a225c694d8525287e320dc7fbe71ee212254c"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "cast"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -689,6 +698,16 @@ dependencies = [
  "tc_aes",
  "tc_block_cipher",
  "tc_block_modes",
+]
+
+[[package]]
+name = "tc_camellia"
+version = "0.1.0"
+dependencies = [
+ "camellia",
+ "criterion",
+ "tc_block_cipher",
+ "tc_zeroize",
 ]
 
 [[package]]

@@ -2,6 +2,32 @@
 
 All notable changes to `tc_des` are documented in this file.
 
+## 0.1.1 - Unreleased
+
+### Added
+
+- Helpers for code that generates keys, after Bouncy Castle's `DesParameters`
+  and `DesEdeParameters`: `set_odd_parity`; `is_weak_key`, covering the same
+  4 weak and 12 semi-weak keys; `is_weak_ede_key`, true when any part of a
+  16- or 24-byte key is weak; and `is_real_ede_key`, true when the parts of a
+  two-key or three-key Triple DES key are distinct, so it does not collapse
+  to single DES.
+- Tests of the helpers against Bouncy Castle's weak-key table with parity bits
+  flipped, every byte for parity, and distinct and repeated parts of both
+  Triple DES lengths; a doctest of key checking.
+
+### Compatibility
+
+- Additive only: no existing API changes.
+- The helpers are constant time: they compare every table entry and key byte
+  without returning early, unlike Bouncy Castle's `IsWeakKey`. Key lengths
+  are treated as public.
+- The helpers ignore parity bits when comparing keys and parts. Bouncy Castle
+  compares whole bytes, so it misses a weak key with wrong parity and accepts
+  Triple DES parts that differ only in parity.
+- `is_weak_ede_key` counts any length other than 16 or 24 as weak, and
+  `is_real_ede_key` counts it as not real, so a malformed key passes neither.
+
 ## 0.1.0 - 2026-09-24
 
 Initial release.

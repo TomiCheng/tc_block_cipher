@@ -26,11 +26,11 @@ The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
 `no_std` and needs no allocator by default. Features are default-off and
 additive: `alloc` on `tc_block_cipher`, `tc_block_modes` and `tc_rc_cipher`,
-`rustcrypto` on `tc_aes`, `tc_des`, `tc_aria` and `tc_rc_cipher`, and
+`rustcrypto` on `tc_aes`, `tc_des`, `tc_aria`, `tc_camellia` and `tc_rc_cipher`, and
 `rand_core` on `tc_block_padding`.
 `tc_block_cipher` depends on `tc_zeroize` alone; `tc_aes` adds
 `tc_block_cipher` and, on x86 targets only, `tc_runtime`; `tc_des`, `tc_aria`,
-`tc_rc_cipher`, `tc_dstu7624` and `tc_block_modes` add `tc_block_cipher` on
+`tc_rc_cipher`, `tc_dstu7624`, `tc_camellia` and `tc_block_modes` add `tc_block_cipher` on
 every target; `tc_block_padding`
 depends on nothing by default. CI enforces each
 crate's default dependency set with `cargo tree` on the
@@ -40,19 +40,21 @@ round counts, S-boxes and timing guarantees belong to the engine crates built
 on it, such as `tc_aes` and `tc_des`, never to `tc_block_cipher`.
 
 `tc_aes` is constant time on its AES-NI and RustCrypto engines and variable
-time on its table and light engines. Every `tc_des`, `tc_aria` and
+time on its table and light engines. Every `tc_des`, `tc_aria`, `tc_camellia` and
 `tc_dstu7624` engine is variable time, as is every RC2 engine in `tc_rc_cipher`; its RC5 and RC6
 engines are constant time only on processors with fixed-latency rotations and,
 for RC6, multiplication. `tc_block_modes` adds only data-independent work, so each mode
 is constant time exactly when its engine is. `tc_block_padding` adds and
 checks padding in constant time with respect to the block contents; only
 `pad_count`'s result reveals the count and whether the padding was valid.
-`tests/documentation.rs` in `tc_des`, `tc_aria`, `tc_rc_cipher`,
+`tests/documentation.rs` in `tc_des`, `tc_aria`, `tc_camellia`, `tc_rc_cipher`,
 `tc_dstu7624`, `tc_block_modes` and `tc_block_padding` requires each declaration it scans to
 say which. Keep the timing contract of each item stated in its doc
 comment, and do not let a dispatcher (`AesEngine`, `DesEngine`,
 `DesEdeEngine`, `AriaEngine`, `Rc2Engine`) select a leakier engine where a less leaky one
-is available.
+is available. `CamelliaEngine` is exempt: none of its
+engines is constant time, and it keeps the table engine over the
+smaller-footprint light engine for throughput.
 
 Rust 1.85 is guaranteed only where the workspace controls every crate: the
 default build and first-party features such as `alloc`, whose dependencies are
@@ -95,8 +97,8 @@ doctests carry the executable examples, and CI runs `cargo doc` with
 public API change belongs in the crate README's contract lists — "Traits" and
 "Types" in `tc_block_cipher/README.md`, `tc_block_modes/README.md` and
 `tc_block_padding/README.md` and `tc_rc_cipher/README.md`,
-"Types" in `tc_aes/README.md`, `tc_des/README.md`, `tc_aria/README.md` and
-`tc_dstu7624/README.md` —
+"Types" in `tc_aes/README.md`, `tc_des/README.md`, `tc_aria/README.md`,
+`tc_camellia/README.md` and `tc_dstu7624/README.md` —
 and in the changelog, not only in the code.
 
 Work happens on `feat/*` branches off `develop`; pull requests target `develop`,

@@ -46,6 +46,17 @@ The constants `DES_ALGO_NAME` and `DES_EDE_ALGO_NAME` hold the two names,
 and `BLOCK_BYTES` the block length, `8`. Every engine implements `Default` and
 has `const fn new`.
 
+For code that generates keys:
+
+- `set_odd_parity` — sets the parity bit of every byte; constant time.
+- `is_weak_key` — whether an 8-byte key is one of the 4 weak or 12 semi-weak
+  DES keys, ignoring parity bits; constant time.
+- `is_weak_ede_key` — whether any part of a 16- or 24-byte Triple DES key is
+  weak; any other length counts as weak; constant time.
+- `is_real_ede_key` — whether the Triple DES parts are distinct, ignoring
+  parity bits, so the key does not collapse to single DES; any other length
+  is not real; constant time.
+
 ## Features
 
 - `rustcrypto` (off by default) — adds the two RustCrypto engines, which the
@@ -56,7 +67,7 @@ has `const fn new`.
 
 ```toml
 [dependencies]
-tc_des = "0.1.0"
+tc_des = "0.1.1"
 tc_block_cipher = "0.1.0"
 ```
 
@@ -112,7 +123,9 @@ on errors, preserved output tails and ignored parity bits for every engine.
 With `rustcrypto`, the table engines are cross-checked against RustCrypto's
 `des` on pseudorandom keys and blocks, and the RustCrypto engines against the
 table engines. A test requires every engine API to document whether it is
-constant or variable time.
+constant or variable time. The key helpers are tested against Bouncy Castle's
+weak and semi-weak key table with parity bits flipped, against every byte for
+parity, and on distinct and repeated parts of both Triple DES lengths.
 
 Missing public documentation and `unsafe` code are rejected by crate-level
 lints.

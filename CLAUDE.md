@@ -43,7 +43,8 @@ on it, such as `tc_aes` and `tc_des`, never to `tc_block_cipher`.
 time on its table and light engines. Every `tc_des`, `tc_aria`, `tc_camellia` and
 `tc_dstu7624` engine is variable time, as is every RC2 engine in `tc_rc_cipher`; its RC5 and RC6
 engines are constant time only on processors with fixed-latency rotations and,
-for RC6, multiplication. `tc_block_modes` adds only data-independent work, so each mode
+for RC6, multiplication. The `tc_des` key helpers (`set_odd_parity`,
+`is_weak_key`, `is_weak_ede_key`, `is_real_ede_key`) are constant time. `tc_block_modes` adds only data-independent work, so each mode
 is constant time exactly when its engine is. `tc_block_padding` adds and
 checks padding in constant time with respect to the block contents; only
 `pad_count`'s result reveals the count and whether the padding was valid.

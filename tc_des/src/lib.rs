@@ -12,6 +12,24 @@
 //! engines narrow the cache-timing channel with smaller S-boxes and a
 //! branch-free key schedule. For explicit selection, `DesRustCryptoEngine` and
 //! `DesEdeRustCryptoEngine` are available with the `rustcrypto` feature.
+//!
+//! # Generating keys
+//!
+//! The engines ignore parity bits and accept weak keys, which is right for
+//! existing data. Code that generates keys can set odd parity with
+//! [`set_odd_parity`] and draw again while [`is_weak_key`] or
+//! [`is_weak_ede_key`] reports a weak key, or while [`is_real_ede_key`]
+//! reports repeated Triple DES parts. These helpers are constant time.
+//!
+//! ```
+//! use tc_des::{is_real_ede_key, is_weak_ede_key, set_odd_parity};
+//!
+//! // In practice these 24 bytes come from a cryptographic random generator.
+//! let mut key = *b"an example 24-byte key!!";
+//! set_odd_parity(&mut key);
+//! let usable = !is_weak_ede_key(&key) && is_real_ede_key(&key);
+//! assert!(usable);
+//! ```
 
 #![no_std]
 #![deny(missing_docs)]
@@ -19,11 +37,13 @@
 
 mod cipher;
 mod engine;
+mod key;
 #[cfg(feature = "rustcrypto")]
 mod rustcrypto_engine;
 mod table_engine;
 
 pub use engine::{DesEdeEngine, DesEngine};
+pub use key::{is_real_ede_key, is_weak_ede_key, is_weak_key, set_odd_parity};
 #[cfg(feature = "rustcrypto")]
 pub use rustcrypto_engine::{DesEdeRustCryptoEngine, DesRustCryptoEngine};
 pub use table_engine::{DesEdeTableEngine, DesTableEngine};

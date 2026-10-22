@@ -84,6 +84,7 @@ fn every_engine_api_and_crate_visible_helper_has_an_unambiguous_timing_doc() {
     for (name, source) in [
         ("cipher.rs", include_str!("../src/cipher.rs")),
         ("engine.rs", include_str!("../src/engine.rs")),
+        ("key.rs", include_str!("../src/key.rs")),
         (
             "rustcrypto_engine.rs",
             include_str!("../src/rustcrypto_engine.rs"),

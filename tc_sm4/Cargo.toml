@@ -1,0 +1,20 @@
+[package]
+name = "tc_sm4"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SM4 block cipher (GB/T 32907-2016) with a 128-bit key and block."
+readme = "README.md"
+documentation = "https://docs.rs/tc_sm4"
+keywords = ["sm4", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+sm4 = "0.6"

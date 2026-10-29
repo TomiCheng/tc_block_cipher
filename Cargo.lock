@@ -631,6 +631,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 
 [[package]]
+name = "sm4"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff2d621883cdeeaee6759d39f4bc8cd314b29db72b6ac3d6714b31422512ee11"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "syn"
 version = "2.0.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -742,6 +751,15 @@ name = "tc_runtime"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d9f70ee51cf053b9ba11bb992cb141769d0968ac50e4f92f00e2546ca4faae3"
+
+[[package]]
+name = "tc_sm4"
+version = "0.1.0"
+dependencies = [
+ "sm4",
+ "tc_block_cipher",
+ "tc_zeroize",
+]
 
 [[package]]
 name = "tc_zeroize"

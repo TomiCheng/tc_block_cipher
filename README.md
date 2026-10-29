@@ -3,7 +3,8 @@
 A Rust workspace for block ciphers. It holds `tc_block_cipher`, the shared
 traits, errors and key containers through which an engine is initialized and
 processes one block, and the crates built on it: the engines `tc_aes`,
-`tc_des`, `tc_aria`, `tc_rc_cipher`, `tc_dstu7624` and `tc_camellia`;
+`tc_des`, `tc_aria`, `tc_rc_cipher`, `tc_dstu7624`, `tc_camellia` and
+`tc_sm4`;
 `tc_block_modes`, the
 modes of operation that run over any of them; and `tc_block_padding`, the padding
 schemes for the modes that process whole blocks.
@@ -27,6 +28,7 @@ validation commands.
 | [`tc_rc_cipher`](tc_rc_cipher) | [![crates.io](https://img.shields.io/crates/v/tc_rc_cipher.svg)](https://crates.io/crates/tc_rc_cipher) [![docs.rs](https://docs.rs/tc_rc_cipher/badge.svg)](https://docs.rs/tc_rc_cipher) | RC2, RC5 and RC6 for legacy interoperability, with a portable RC2 engine and a dispatcher that picks an engine at compile time. RC2 is variable time; RC5 and RC6 are constant time on processors with fixed-latency rotations and, for RC6, multiplication. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `rustcrypto` feature adds an RC2 engine backed by RustCrypto's `rc2`, and a default-off `alloc` feature adds parameter types that own and wipe the key. |
 | [`tc_camellia`](tc_camellia) | [![crates.io](https://img.shields.io/crates/v/tc_camellia.svg)](https://crates.io/crates/tc_camellia) [![docs.rs](https://docs.rs/tc_camellia/badge.svg)](https://docs.rs/tc_camellia) | Camellia-128, Camellia-192 and Camellia-256 (RFC 3713) with a T-table engine, a small-footprint engine and a dispatcher that picks an engine at compile time. Every engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `rustcrypto` feature adds an engine backed by RustCrypto's `camellia`, which the dispatcher then uses. |
 | [`tc_dstu7624`](tc_dstu7624) | [![crates.io](https://img.shields.io/crates/v/tc_dstu7624.svg)](https://crates.io/crates/tc_dstu7624) [![docs.rs](https://docs.rs/tc_dstu7624/badge.svg)](https://docs.rs/tc_dstu7624) | DSTU 7624:2014 (Kalyna) with 128-, 256- and 512-bit blocks and one- or two-block keys. Every engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
+| [`tc_sm4`](tc_sm4) | [![crates.io](https://img.shields.io/crates/v/tc_sm4.svg)](https://crates.io/crates/tc_sm4) [![docs.rs](https://docs.rs/tc_sm4/badge.svg)](https://docs.rs/tc_sm4) | SM4 (GB/T 32907-2016), the Chinese national standard, with a 128-bit key and block. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
 
 `tc_block_cipher` defines the contract and knows no algorithm; each engine
 crate implements it and documents its own key lengths and timing guarantees.

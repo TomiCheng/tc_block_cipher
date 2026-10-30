@@ -1,26 +1,28 @@
-//! Threefish block-cipher engine.
+//! Feature-selected Threefish engine.
 
 use core::fmt;
 
 use tc_block_cipher::{BlockCipher, BlockCipherInit, BlockError, CipherDirection, InitError};
-use tc_zeroize::Zeroize;
 
-use crate::cipher::{self, C_240};
-use crate::{
-    THREEFISH_256_ALGO_NAME, THREEFISH_512_ALGO_NAME, THREEFISH_1024_ALGO_NAME, TWEAK_BYTES,
-    ThreefishParams,
-};
+use crate::ThreefishParams;
+#[cfg(not(feature = "rustcrypto"))]
+use crate::ThreefishPortableEngine as Backend;
+#[cfg(feature = "rustcrypto")]
+use crate::ThreefishRustCryptoEngine as Backend;
 
-/// Threefish with a compile-time block and key width.
+/// Threefish with RustCrypto when the `rustcrypto` feature is enabled,
+/// otherwise the portable engine, with a compile-time block width.
 ///
 /// `WORDS` must be 4, 8, or 16, selecting Threefish-256, Threefish-512, or
 /// Threefish-1024. The named aliases are usually more convenient.
 ///
-/// Constant time with respect to key, tweak and block contents: additions,
-/// XORs, rotations and schedule indices follow public round parameters.
+/// Constant time with respect to key, tweak and block contents on either
+/// backend. The API is the same in either case.
 ///
-/// Stored keys, parity and tweaks are wiped on replacement and drop. This
-/// does not wipe caller buffers or guarantee erasure of every register or stack copy.
+/// RustCrypto expands the whole subkey schedule in `init`, which pays off
+/// when many blocks share a key and tweak. Callers that change them for every
+/// block, as Skein does, should use
+/// [`ThreefishPortableEngine`](crate::ThreefishPortableEngine) directly.
 ///
 /// # Example
 ///
@@ -49,28 +51,15 @@ use crate::{
 /// const INVALID: tc_threefish::ThreefishEngine<3> = tc_threefish::ThreefishEngine::new();
 /// ```
 pub struct ThreefishEngine<const WORDS: usize> {
-    key: [u64; WORDS],
-    parity: u64,
-    tweak: [u64; 3],
-    direction: CipherDirection,
-    initialised: bool,
+    inner: Backend<WORDS>,
 }
 
 impl<const WORDS: usize> ThreefishEngine<WORDS> {
-    const VALID_WORD_COUNT: () = assert!(
-        valid_word_count(WORDS),
-        "Threefish WORDS must be 4, 8, or 16"
-    );
-
-    /// Creates an uninitialised engine for the selected Threefish variant. Constant time.
+    /// Creates an uninitialised engine for the selected Threefish variant.
+    /// Constant time: the backend is selected at compile time.
     pub const fn new() -> Self {
-        let () = Self::VALID_WORD_COUNT;
         Self {
-            key: [0; WORDS],
-            parity: 0,
-            tweak: [0; 3],
-            direction: CipherDirection::Encrypt,
-            initialised: false,
+            inner: Backend::new(),
         }
     }
 }
@@ -86,12 +75,7 @@ impl<const WORDS: usize> fmt::Display for ThreefishEngine<WORDS> {
     /// Writes the algorithm name without inspecting key material.
     /// Constant time with respect to the key; output timing depends on the formatter.
     fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match WORDS {
-            4 => output.write_str(THREEFISH_256_ALGO_NAME),
-            8 => output.write_str(THREEFISH_512_ALGO_NAME),
-            16 => output.write_str(THREEFISH_1024_ALGO_NAME),
-            _ => unreachable!("ThreefishEngine validates WORDS"),
-        }
+        self.inner.fmt(output)
     }
 }
 
@@ -100,7 +84,7 @@ impl<const WORDS: usize> BlockCipher for ThreefishEngine<WORDS> {
 
     /// Returns the selected block length in bytes. Constant time.
     fn block_size(&self) -> usize {
-        WORDS * 8
+        self.inner.block_size()
     }
 
     /// Processes one block and returns its length, preserving any output tail.
@@ -108,52 +92,7 @@ impl<const WORDS: usize> BlockCipher for ThreefishEngine<WORDS> {
     /// Returns `NotInitialised` or `BufferTooShort` without touching output.
     /// Constant time with respect to key, tweak and block contents.
     fn process_block(&mut self, input: &[u8], output: &mut [u8]) -> Result<usize, BlockError> {
-        if !self.initialised {
-            return Err(BlockError::NotInitialised);
-        }
-
-        let block_bytes = self.block_size();
-        if input.len() < block_bytes || output.len() < block_bytes {
-            return Err(BlockError::BufferTooShort);
-        }
-
-        let mut input_words = [0u64; WORDS];
-        for (word, bytes) in input_words
-            .iter_mut()
-            .zip(input[..block_bytes].chunks_exact(8))
-        {
-            *word = u64::from_le_bytes(bytes.try_into().unwrap());
-        }
-
-        let mut output_words = [0u64; WORDS];
-        let variant = cipher::variant(WORDS);
-        if self.direction == CipherDirection::Encrypt {
-            cipher::encrypt(
-                &variant,
-                &self.key,
-                self.parity,
-                &self.tweak,
-                &input_words,
-                &mut output_words,
-            );
-        } else {
-            cipher::decrypt(
-                &variant,
-                &self.key,
-                self.parity,
-                &self.tweak,
-                &input_words,
-                &mut output_words,
-            );
-        }
-
-        for (word, bytes) in output_words
-            .iter()
-            .zip(output[..block_bytes].chunks_exact_mut(8))
-        {
-            bytes.copy_from_slice(&word.to_le_bytes());
-        }
-        Ok(block_bytes)
+        self.inner.process_block(input, output)
     }
 }
 
@@ -167,57 +106,8 @@ impl<P: ThreefishParams + ?Sized, const WORDS: usize> BlockCipherInit<P>
     /// An absent tweak means zero. Invalid key or tweak lengths preserve all prior state.
     /// Constant time with respect to key and tweak contents; lengths are public.
     fn init(&mut self, direction: CipherDirection, params: &P) -> Result<(), InitError> {
-        let key = params.key();
-        let key_bytes = WORDS * 8;
-        if key.len() != key_bytes {
-            return Err(InitError::InvalidKeyLength(key.len()));
-        }
-
-        let tweak = params.tweak();
-        if let Some(tweak) = tweak {
-            if tweak.len() != TWEAK_BYTES {
-                return Err(InitError::InvalidTweakLength(tweak.len()));
-            }
-        }
-
-        self.key.zeroize();
-        self.parity.zeroize();
-        self.tweak.zeroize();
-        for (word, bytes) in self.key.iter_mut().zip(key.chunks_exact(8)) {
-            *word = u64::from_le_bytes(bytes.try_into().unwrap());
-        }
-        self.parity = self.key.iter().fold(C_240, |parity, word| parity ^ word);
-
-        let mut tweak_words = [0u64; 2];
-        if let Some(tweak) = tweak {
-            for (word, bytes) in tweak_words.iter_mut().zip(tweak.chunks_exact(8)) {
-                *word = u64::from_le_bytes(bytes.try_into().unwrap());
-            }
-        }
-        self.tweak = [
-            tweak_words[0],
-            tweak_words[1],
-            tweak_words[0] ^ tweak_words[1],
-        ];
-
-        tweak_words.zeroize();
-        self.direction = direction;
-        self.initialised = true;
-        Ok(())
+        self.inner.init(direction, params)
     }
-}
-
-impl<const WORDS: usize> Drop for ThreefishEngine<WORDS> {
-    fn drop(&mut self) {
-        self.key.zeroize();
-        self.parity.zeroize();
-        self.tweak.zeroize();
-    }
-}
-
-/// Checks a public block-width parameter. Constant time with respect to secrets.
-pub(crate) const fn valid_word_count(words: usize) -> bool {
-    matches!(words, 4 | 8 | 16)
 }
 
 /// Threefish-256 engine with a 32-byte block and key.

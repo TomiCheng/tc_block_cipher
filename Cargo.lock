@@ -783,6 +783,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d01bb3253ac4d5c6c7dbb6f4f66a8178a24deefe0067357ace6482db2f3ccc6e"
 dependencies = [
  "cipher",
+ "zeroize",
 ]
 
 [[package]]

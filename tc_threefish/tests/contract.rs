@@ -3,8 +3,11 @@
 use tc_block_cipher::{
     BlockCipher, BlockCipherInit, BlockError, CipherDirection, InitError, KeyParams,
 };
+#[cfg(feature = "rustcrypto")]
+use tc_threefish::ThreefishRustCryptoEngine;
 use tc_threefish::{
     TWEAK_BYTES, Threefish256Engine, ThreefishEngine, ThreefishParams, ThreefishParamsRef,
+    ThreefishPortableEngine,
 };
 
 fn check_contract<E>(
@@ -133,19 +136,20 @@ fn check_contract<E>(
     assert_eq!(&recovered[block_bytes..], &[0x55; 4]);
 }
 
-fn check_variant<const WORDS: usize>() {
+fn check_engine<E, const WORDS: usize>(create: fn() -> E)
+where
+    E: Default
+        + core::fmt::Display
+        + BlockCipher<Error = BlockError>
+        + for<'a> BlockCipherInit<ThreefishParamsRef<'a>, Error = InitError>
+        + 'static,
+{
     let size = WORDS * 8;
     let name = format!("Threefish-{}", size * 8);
     let invalid = &[0, size - 1, size + 1, size * 2];
-    check_contract(ThreefishEngine::<WORDS>::new(), size, size, &name, invalid);
-    check_contract(
-        ThreefishEngine::<WORDS>::default(),
-        size,
-        size,
-        &name,
-        invalid,
-    );
-    let mut engine = ThreefishEngine::<WORDS>::new();
+    check_contract(create(), size, size, &name, invalid);
+    check_contract(E::default(), size, size, &name, invalid);
+    let mut engine = create();
     let key = vec![0x42; size];
     for direction in [CipherDirection::Encrypt, CipherDirection::Decrypt] {
         let mut absent = vec![0; size];
@@ -167,9 +171,16 @@ fn check_variant<const WORDS: usize>() {
     }
 }
 
+fn check_variant<const WORDS: usize>() {
+    check_engine::<_, WORDS>(ThreefishEngine::<WORDS>::new);
+    check_engine::<_, WORDS>(ThreefishPortableEngine::<WORDS>::new);
+    #[cfg(feature = "rustcrypto")]
+    check_engine::<_, WORDS>(ThreefishRustCryptoEngine::<WORDS>::new);
+}
+
 #[test]
-fn all_threefish_variants_preserve_state_on_invalid_keys_or_tweaks_and_treat_absent_tweaks_as_zero()
-{
+fn every_engine_and_width_preserves_state_on_invalid_keys_or_tweaks_and_treats_absent_tweaks_as_zero()
+ {
     check_variant::<4>();
     check_variant::<8>();
     check_variant::<16>();

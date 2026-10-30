@@ -1,11 +1,33 @@
-//! Threefish with a nonzero tweak agrees with RustCrypto for all block widths.
+//! Every Threefish engine agrees with RustCrypto's `threefish` for all block
+//! widths and nonzero tweaks.
 
 mod common;
 
 use common::unhex;
-use tc_block_cipher::{BlockCipher, BlockCipherInit, CipherDirection};
-use tc_threefish::{ThreefishEngine, ThreefishParamsRef};
+use tc_block_cipher::{BlockCipher, BlockCipherInit, BlockError, CipherDirection, InitError};
+#[cfg(feature = "rustcrypto")]
+use tc_threefish::ThreefishRustCryptoEngine;
+use tc_threefish::{ThreefishParamsRef, ThreefishPortableEngine};
 use threefish::{Threefish256, Threefish512, Threefish1024};
+
+fn process<E>(
+    mut engine: E,
+    direction: CipherDirection,
+    key: &[u8],
+    tweak: &[u8],
+    input: &[u8],
+) -> Vec<u8>
+where
+    E: BlockCipher<Error = BlockError>
+        + for<'a> BlockCipherInit<ThreefishParamsRef<'a>, Error = InitError>,
+{
+    engine
+        .init(direction, &ThreefishParamsRef::with_tweak(key, tweak))
+        .unwrap();
+    let mut output = vec![0; input.len()];
+    engine.process_block(input, &mut output).unwrap();
+    output
+}
 
 macro_rules! compare {
     ($name:ident, $reference:ty, $words:literal, $ciphertext:expr) => {
@@ -48,13 +70,13 @@ macro_rules! compare {
                         CipherDirection::Decrypt => reference.decrypt_block_u64(&mut words),
                     }
                     let expected: Vec<u8> = words.iter().flat_map(|w| w.to_le_bytes()).collect();
-                    let mut engine = ThreefishEngine::<$words>::new();
-                    engine
-                        .init(direction, &ThreefishParamsRef::with_tweak(&key, &tweak))
-                        .unwrap();
-                    let mut actual = [0; SIZE];
-                    engine.process_block(&input, &mut actual).unwrap();
-                    assert_eq!(actual.as_slice(), expected);
+                    let engine = ThreefishPortableEngine::<$words>::new();
+                    assert_eq!(process(engine, direction, &key, &tweak, &input), expected);
+                    #[cfg(feature = "rustcrypto")]
+                    {
+                        let engine = ThreefishRustCryptoEngine::<$words>::new();
+                        assert_eq!(process(engine, direction, &key, &tweak, &input), expected);
+                    }
                 }
             }
         }
@@ -62,14 +84,14 @@ macro_rules! compare {
 }
 
 compare!(
-    threefish_256_matches_a_nonzero_tweak_kat_and_64_random_pairs,
+    every_threefish_256_engine_matches_a_nonzero_tweak_kat_and_64_random_pairs,
     Threefish256,
     4,
     "e0d091ff0eea8fdfc98192e62ed80ad59d865d08588df476657056b5955e97df"
 );
 
 compare!(
-    threefish_512_matches_a_nonzero_tweak_kat_and_64_random_pairs,
+    every_threefish_512_engine_matches_a_nonzero_tweak_kat_and_64_random_pairs,
     Threefish512,
     8,
     "e304439626d45a2cb401cad8d636249a6338330eb06d45dd8b36b90e97254779\
@@ -77,7 +99,7 @@ compare!(
 );
 
 compare!(
-    threefish_1024_matches_a_nonzero_tweak_kat_and_64_random_pairs,
+    every_threefish_1024_engine_matches_a_nonzero_tweak_kat_and_64_random_pairs,
     Threefish1024,
     16,
     "a6654ddbd73cc3b05dd777105aa849bce49372eaaffc5568d254771bab85531c\

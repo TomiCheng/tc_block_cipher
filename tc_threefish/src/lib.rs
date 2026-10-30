@@ -3,8 +3,12 @@
 //! The 256-, 512- and 1024-bit variants require a block-sized key and an
 //! optional 16-byte tweak. An absent tweak is equivalent to sixteen zero bytes.
 //!
-//! The `alloc` feature adds `ThreefishParamsOwned`, which owns its key and
-//! tweak and wipes them on drop.
+//! [`ThreefishEngine`] and its aliases use [`ThreefishPortableEngine`], a
+//! portable engine after Bouncy Castle. The `rustcrypto` feature adds
+//! `ThreefishRustCryptoEngine`, backed by RustCrypto's `threefish` crate,
+//! which `ThreefishEngine` then uses. The `alloc` feature adds
+//! `ThreefishParamsOwned`, which owns its key and tweak and wipes them on
+//! drop.
 
 #![no_std]
 #![deny(missing_docs)]
@@ -16,12 +20,18 @@ extern crate alloc;
 mod cipher;
 mod engine;
 mod params;
+mod portable_engine;
+#[cfg(feature = "rustcrypto")]
+mod rustcrypto_engine;
 mod traits;
 
 pub use engine::{Threefish256Engine, Threefish512Engine, Threefish1024Engine, ThreefishEngine};
 #[cfg(feature = "alloc")]
 pub use params::ThreefishParamsOwned;
 pub use params::ThreefishParamsRef;
+pub use portable_engine::ThreefishPortableEngine;
+#[cfg(feature = "rustcrypto")]
+pub use rustcrypto_engine::ThreefishRustCryptoEngine;
 pub use traits::ThreefishParams;
 
 /// Fixed tweak length in bytes.

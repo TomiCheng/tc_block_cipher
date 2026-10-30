@@ -12,9 +12,13 @@ core of the Skein hash. Every engine implements the
 
 The crate is `no_std`, needs no allocator by default and contains no `unsafe`
 code. It depends on `tc_block_cipher` and
-[`tc_zeroize`](https://crates.io/crates/tc_zeroize).
+[`tc_zeroize`](https://crates.io/crates/tc_zeroize), and on RustCrypto's
+[`threefish`](https://crates.io/crates/threefish) only with the default-off
+`rustcrypto` feature.
 
-Requires Rust 1.85 or later (edition 2024).
+Requires Rust 1.85 or later (edition 2024) for the default build and the
+`alloc` feature. The optional `rustcrypto` feature follows the minimum Rust
+version of the `threefish` crate instead, which is 1.85 for `threefish` 0.6.0.
 
 ## Traits
 
@@ -26,13 +30,21 @@ Requires Rust 1.85 or later (edition 2024).
 - `Threefish256Engine` — 256-bit block with a 32-byte key; constant time.
 - `Threefish512Engine` — 512-bit block with a 64-byte key; constant time.
 - `Threefish1024Engine` — 1024-bit block with a 128-byte key; constant time.
-- `ThreefishEngine` — the engine behind the three aliases, whose const
-  parameter counts 64-bit block words; only 4, 8 and 16 compile.
+- `ThreefishEngine` — the engine behind the three aliases, on the RustCrypto
+  engine with `rustcrypto`, otherwise on the portable engine; constant time.
+- `ThreefishPortableEngine` — portable Threefish after Bouncy Castle, which
+  derives each subkey while processing a block, so rekeying is cheap; constant
+  time.
+- `ThreefishRustCryptoEngine` (`rustcrypto`) — RustCrypto's `threefish`, which
+  expands every subkey in `init`, so blocks are faster and rekeying slower;
+  constant time.
 - `ThreefishParamsRef` — a borrowed key with an optional borrowed tweak.
 - `ThreefishParamsOwned` (`alloc`) — the same, owning the key and tweak and
   wiping them on drop.
 
-Each engine takes its key and tweak through any `ThreefishParams`. The key must
+The three engine types take a const parameter that counts 64-bit block words;
+only 4, 8 and 16 compile. Each engine takes its key and tweak through any
+`ThreefishParams`. The key must
 be one block long and the tweak, when present, 16 bytes; an absent tweak is all
 zero. Another length returns `InitError::InvalidKeyLength` or
 `InitError::InvalidTweakLength` and keeps the previous key, tweak and direction.
@@ -48,6 +60,10 @@ engine implements `Default` and has `const fn new`.
 ## Features
 
 - `alloc` (off by default) — adds `ThreefishParamsOwned`.
+- `rustcrypto` (off by default) — adds `ThreefishRustCryptoEngine`, which
+  `ThreefishEngine` then uses; pulls in the `threefish` crate and its minimum
+  Rust version. Callers that change the key or tweak for every block, as Skein
+  does, should keep using `ThreefishPortableEngine`.
 
 ## Usage
 
@@ -76,11 +92,13 @@ The crate and engine documentation carry executable examples.
 ## Security
 
 Every engine is constant time with respect to the key, the tweak and the block
-contents: it uses only additions, XORs and rotations, and its schedule indices
-follow the public round number.
+contents: both backends use only additions, XORs and rotations, and their
+schedule indices follow the public round number.
 
-Engines keep the expanded key and tweak rather than borrowing the caller's,
-and wipe them when they are replaced and on drop. `ThreefishParamsOwned` wipes
+Engines keep the key and tweak, or the RustCrypto engine its expanded
+schedule, rather than borrowing the caller's, and wipe them when they are
+replaced and on drop; the RustCrypto engine does so through the `threefish`
+crate's `zeroize` support, which the feature enables. `ThreefishParamsOwned` wipes
 its key and tweak on drop. Wiping does not reach the caller's buffers or copies
 left in registers and on the stack.
 
@@ -89,13 +107,13 @@ no padding, mode of operation or authentication.
 
 ## Validation
 
-The engines are tested against the vectors of the Skein 1.3 submission and the
+Every engine is tested against the vectors of the Skein 1.3 submission and the
 Bouncy Castle tests for every block size, with zero and nonzero tweaks, in both
-directions, and against RustCrypto's `threefish` with a nonzero tweak for every
-block size. Contract tests cover error
-state, untouched output on errors, preserved output tails, absent tweaks and
-third-party parameter types. A test requires every engine API to document
-whether it is constant or variable time.
+directions, and against RustCrypto's `threefish` with random keys, tweaks and
+blocks for every block size. Contract tests cover error state, untouched output
+on errors, preserved output tails, absent tweaks and third-party parameter
+types. A test requires every engine API to document whether it is constant or
+variable time.
 
 Missing public documentation and `unsafe` code are rejected by crate-level
 lints.

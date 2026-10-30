@@ -3,10 +3,41 @@
 mod common;
 
 use common::unhex;
-use tc_block_cipher::{BlockCipher, BlockCipherInit, CipherDirection};
-use tc_threefish::{ThreefishEngine, ThreefishParamsRef};
+use tc_block_cipher::{BlockCipher, BlockCipherInit, BlockError, CipherDirection, InitError};
+#[cfg(feature = "rustcrypto")]
+use tc_threefish::ThreefishRustCryptoEngine;
+use tc_threefish::{ThreefishEngine, ThreefishParamsRef, ThreefishPortableEngine};
 
 fn assert_vector<const WORDS: usize>(key: &str, tweak: &str, plaintext: &str, ciphertext: &str) {
+    assert_engine(
+        ThreefishEngine::<WORDS>::new(),
+        key,
+        tweak,
+        plaintext,
+        ciphertext,
+    );
+    assert_engine(
+        ThreefishPortableEngine::<WORDS>::new(),
+        key,
+        tweak,
+        plaintext,
+        ciphertext,
+    );
+    #[cfg(feature = "rustcrypto")]
+    assert_engine(
+        ThreefishRustCryptoEngine::<WORDS>::new(),
+        key,
+        tweak,
+        plaintext,
+        ciphertext,
+    );
+}
+
+fn assert_engine<E>(mut engine: E, key: &str, tweak: &str, plaintext: &str, ciphertext: &str)
+where
+    E: BlockCipher<Error = BlockError>
+        + for<'a> BlockCipherInit<ThreefishParamsRef<'a>, Error = InitError>,
+{
     let ciphertext = unhex(ciphertext);
     let block_bytes = ciphertext.len();
     let key = if key.is_empty() {
@@ -25,7 +56,6 @@ fn assert_vector<const WORDS: usize>(key: &str, tweak: &str, plaintext: &str, ci
         unhex(plaintext)
     };
     let params = ThreefishParamsRef::with_tweak(&key, &tweak);
-    let mut engine = ThreefishEngine::<WORDS>::new();
     let mut output = vec![0u8; block_bytes];
 
     engine.init(CipherDirection::Encrypt, &params).unwrap();
@@ -41,7 +71,7 @@ fn assert_vector<const WORDS: usize>(key: &str, tweak: &str, plaintext: &str, ci
 }
 
 #[test]
-fn threefish_256_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions() {
+fn every_threefish_256_engine_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions() {
     assert_vector::<4>(
         "",
         "",
@@ -57,7 +87,7 @@ fn threefish_256_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions()
 }
 
 #[test]
-fn threefish_512_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions() {
+fn every_threefish_512_engine_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions() {
     assert_vector::<8>(
         "",
         "",
@@ -77,7 +107,7 @@ fn threefish_512_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions()
 }
 
 #[test]
-fn threefish_1024_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions() {
+fn every_threefish_1024_engine_matches_the_zero_and_nonzero_tweak_vectors_in_both_directions() {
     assert_vector::<16>(
         "",
         "",

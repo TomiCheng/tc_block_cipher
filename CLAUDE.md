@@ -27,7 +27,8 @@ The crate list and workspace-wide checks live in the root
 `no_std` and needs no allocator by default. Features are default-off and
 additive: `alloc` on `tc_block_cipher`, `tc_block_modes`, `tc_rc_cipher` and
 `tc_threefish`,
-`rustcrypto` on `tc_aes`, `tc_des`, `tc_aria`, `tc_camellia` and `tc_rc_cipher`, and
+`rustcrypto` on `tc_aes`, `tc_des`, `tc_aria`, `tc_camellia`, `tc_rc_cipher` and
+`tc_threefish`, and
 `rand_core` on `tc_block_padding`.
 `tc_block_cipher` depends on `tc_zeroize` alone; `tc_aes` adds
 `tc_block_cipher` and, on x86 targets only, `tc_runtime`; `tc_des`, `tc_aria`,
@@ -54,7 +55,7 @@ checks padding in constant time with respect to the block contents; only
 `tc_dstu7624`, `tc_sm4`, `tc_threefish`, `tc_block_modes` and `tc_block_padding` requires each declaration it scans to
 say which. Keep the timing contract of each item stated in its doc
 comment, and do not let a dispatcher (`AesEngine`, `DesEngine`,
-`DesEdeEngine`, `AriaEngine`, `Rc2Engine`) select a leakier engine where a less leaky one
+`DesEdeEngine`, `AriaEngine`, `Rc2Engine`, `ThreefishEngine`) select a leakier engine where a less leaky one
 is available. `CamelliaEngine` is exempt: none of its
 engines is constant time, and it keeps the table engine over the
 smaller-footprint light engine for throughput.

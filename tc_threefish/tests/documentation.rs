@@ -88,7 +88,27 @@ pub struct Parameters {}
 fn every_engine_api_and_crate_visible_helper_has_an_unambiguous_timing_doc() {
     for (name, source) in [
         ("engine.rs", include_str!("../src/engine.rs")),
+        (
+            "portable_engine.rs",
+            include_str!("../src/portable_engine.rs"),
+        ),
+        (
+            "rustcrypto_engine.rs",
+            include_str!("../src/rustcrypto_engine.rs"),
+        ),
         ("cipher.rs", include_str!("../src/cipher.rs")),
+        (
+            "cipher/threefish256.rs",
+            include_str!("../src/cipher/threefish256.rs"),
+        ),
+        (
+            "cipher/threefish512.rs",
+            include_str!("../src/cipher/threefish512.rs"),
+        ),
+        (
+            "cipher/threefish1024.rs",
+            include_str!("../src/cipher/threefish1024.rs"),
+        ),
         (
             "params/threefish_params_owned.rs",
             include_str!("../src/params/threefish_params_owned.rs"),

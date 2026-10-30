@@ -700,10 +700,12 @@ dependencies = [
 
 [[package]]
 name = "tc_block_modes"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "tc_aes",
  "tc_block_cipher",
+ "tc_dstu7624",
+ "tc_gost28147",
  "tc_zeroize",
 ]
 

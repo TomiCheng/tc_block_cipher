@@ -33,11 +33,10 @@ version of the `threefish` crate instead, which is 1.85 for `threefish` 0.6.0.
 - `ThreefishEngine` — the engine behind the three aliases, on the RustCrypto
   engine with `rustcrypto`, otherwise on the portable engine; constant time.
 - `ThreefishPortableEngine` — portable Threefish after Bouncy Castle, which
-  derives each subkey while processing a block, so rekeying is cheap; constant
-  time.
+  derives each subkey while processing a block; the faster engine for both key
+  setup and blocks; constant time.
 - `ThreefishRustCryptoEngine` (`rustcrypto`) — RustCrypto's `threefish`, which
-  expands every subkey in `init`, so blocks are faster and rekeying slower;
-  constant time.
+  expands every subkey in `init`; constant time.
 - `ThreefishParamsRef` — a borrowed key with an optional borrowed tweak.
 - `ThreefishParamsOwned` (`alloc`) — the same, owning the key and tweak and
   wiping them on drop.
@@ -62,8 +61,9 @@ engine implements `Default` and has `const fn new`.
 - `alloc` (off by default) — adds `ThreefishParamsOwned`.
 - `rustcrypto` (off by default) — adds `ThreefishRustCryptoEngine`, which
   `ThreefishEngine` then uses; pulls in the `threefish` crate and its minimum
-  Rust version. Callers that change the key or tweak for every block, as Skein
-  does, should keep using `ThreefishPortableEngine`.
+  Rust version. This makes `ThreefishEngine` slower, 5 to 10 times for key
+  setup and up to twice for blocks in [BENCHES.md](BENCHES.md); use
+  `ThreefishPortableEngine` directly where speed matters.
 
 ## Usage
 
@@ -115,6 +115,9 @@ on errors, preserved output tails, absent tweaks and third-party parameter
 types. A test requires every engine API to document whether it is constant or
 variable time.
 
+Benchmark results for both engines, and the commands to reproduce them, are in
+[BENCHES.md](BENCHES.md).
+
 Missing public documentation and `unsafe` code are rejected by crate-level
 lints.
 
@@ -136,9 +139,9 @@ cargo package -p tc_threefish --list --locked
 cargo publish -p tc_threefish --dry-run --locked
 ```
 
-The archive includes both license texts, this README, the changelog, the source
-and the integration tests. It must not include `target/` or other build
-artifacts.
+The archive includes both license texts, this README, the changelog, the
+benchmark results, the source, the integration tests and the benchmark. It must
+not include `target/` or other build artifacts.
 
 ## License
 

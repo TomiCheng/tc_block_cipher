@@ -765,6 +765,7 @@ dependencies = [
 name = "tc_threefish"
 version = "0.1.0"
 dependencies = [
+ "criterion",
  "tc_block_cipher",
  "tc_zeroize",
  "threefish",

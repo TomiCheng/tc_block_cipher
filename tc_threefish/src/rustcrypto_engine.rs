@@ -25,10 +25,12 @@ enum Cipher {
 /// Threefish backed by RustCrypto's `threefish` crate, enabled with `rustcrypto`.
 ///
 /// `WORDS` must be 4, 8, or 16, selecting Threefish-256, Threefish-512, or
-/// Threefish-1024. `init` expands the whole subkey schedule, so blocks are
-/// faster than on [`ThreefishPortableEngine`](crate::ThreefishPortableEngine)
-/// but rekeying is slower. The stored schedule takes the space of the
-/// Threefish-1024 one, 2688 bytes, whatever the width.
+/// Threefish-1024. `init` expands the whole subkey schedule. In the crate's
+/// benchmarks this made `init` 5 to 10 times slower than on
+/// [`ThreefishPortableEngine`](crate::ThreefishPortableEngine), and blocks
+/// were not faster in exchange: they took up to twice as long. The stored
+/// schedule takes the space of the Threefish-1024 one, 2688 bytes, whatever
+/// the width.
 ///
 /// Constant time with respect to key, tweak and block contents: the backend
 /// uses only additions, XORs and rotations, and its schedule indices follow

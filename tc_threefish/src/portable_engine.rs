@@ -18,7 +18,8 @@ use crate::{
 /// rounds per loop iteration. The subkey schedule is not expanded in advance:
 /// `init` stores only the key, its parity word and the tweak, and each block
 /// reads its subkeys from them. Rekeying is therefore cheap, which suits
-/// callers that change the key or tweak for every block, as Skein does.
+/// callers that change the key or tweak for every block, as Skein does. In the
+/// crate's benchmarks it was also faster per block than RustCrypto's engine.
 ///
 /// Constant time with respect to key, tweak and block contents: additions,
 /// XORs, rotations and schedule offsets follow the public round number.

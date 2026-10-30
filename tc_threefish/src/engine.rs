@@ -19,10 +19,10 @@ use crate::ThreefishRustCryptoEngine as Backend;
 /// Constant time with respect to key, tweak and block contents on either
 /// backend. The API is the same in either case.
 ///
-/// RustCrypto expands the whole subkey schedule in `init`, which pays off
-/// when many blocks share a key and tweak. Callers that change them for every
-/// block, as Skein does, should use
-/// [`ThreefishPortableEngine`](crate::ThreefishPortableEngine) directly.
+/// Enabling `rustcrypto` makes this engine slower: in the crate's benchmarks
+/// RustCrypto took 5 to 10 times as long to `init` and up to twice as long per
+/// block as [`ThreefishPortableEngine`](crate::ThreefishPortableEngine). Use
+/// the portable engine directly where speed matters more than the backend.
 ///
 /// # Example
 ///

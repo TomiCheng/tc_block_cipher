@@ -46,6 +46,8 @@ Initial release.
   types for every engine; a test that every engine API documents whether it is
   constant or variable time; and doctests for every engine and the owned
   parameter type.
+- Criterion benchmarks for key setup and single-block processing on the
+  portable and RustCrypto engines, with results in `BENCHES.md`.
 
 ### Compatibility
 

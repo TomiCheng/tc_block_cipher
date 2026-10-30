@@ -1,0 +1,27 @@
+[package]
+name = "tc_gost28147"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "GOST 28147-89 block cipher with the standard and caller-supplied S-boxes."
+readme = "README.md"
+documentation = "https://docs.rs/tc_gost28147"
+keywords = ["gost", "gost28147", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+alloc = ["tc_zeroize/alloc"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+magma = "0.10"

@@ -96,6 +96,7 @@ jobs:
       - run: cargo +1.85.0 check --locked -p tc_block_cipher --features alloc
       - run: cargo +1.85.0 check --locked -p tc_block_modes --features alloc
       - run: cargo +1.85.0 check --locked -p tc_rc_cipher --features alloc
+      - run: cargo +1.85.0 check --locked -p tc_threefish --features alloc
 
   quality:
     name: Format, Clippy, docs and package
@@ -161,6 +162,7 @@ jobs:
             check 'tc_block_cipher tc_camellia tc_zeroize' -p tc_camellia --target "$target"
             check 'tc_block_cipher tc_sm4 tc_zeroize' -p tc_sm4 --target "$target"
             check 'tc_block_cipher tc_threefish tc_zeroize' -p tc_threefish --target "$target"
+            check 'tc_block_cipher tc_threefish tc_zeroize' -p tc_threefish --target "$target" --features alloc
           done
           # tc_runtime backs AES-NI detection on x86 targets only. DES, ARIA,
           # the RC ciphers, Kalyna, Camellia, SM4 and Threefish have no

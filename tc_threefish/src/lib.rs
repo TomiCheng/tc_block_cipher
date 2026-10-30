@@ -2,10 +2,16 @@
 //!
 //! The 256-, 512- and 1024-bit variants require a block-sized key and an
 //! optional 16-byte tweak. An absent tweak is equivalent to sixteen zero bytes.
+//!
+//! The `alloc` feature adds `ThreefishParamsOwned`, which owns its key and
+//! tweak and wipes them on drop.
 
 #![no_std]
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
 
 mod cipher;
 mod engine;
@@ -13,6 +19,8 @@ mod params;
 mod traits;
 
 pub use engine::{Threefish256Engine, Threefish512Engine, Threefish1024Engine, ThreefishEngine};
+#[cfg(feature = "alloc")]
+pub use params::ThreefishParamsOwned;
 pub use params::ThreefishParamsRef;
 pub use traits::ThreefishParams;
 

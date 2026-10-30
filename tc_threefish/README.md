@@ -10,8 +10,8 @@ The Threefish tweakable block ciphers with 256-, 512- and 1024-bit blocks, the
 core of the Skein hash. Every engine implements the
 [`tc_block_cipher`](https://crates.io/crates/tc_block_cipher) traits.
 
-The crate is `no_std`, needs no allocator and contains no `unsafe` code. It
-depends on `tc_block_cipher` and
+The crate is `no_std`, needs no allocator by default and contains no `unsafe`
+code. It depends on `tc_block_cipher` and
 [`tc_zeroize`](https://crates.io/crates/tc_zeroize).
 
 Requires Rust 1.85 or later (edition 2024).
@@ -29,6 +29,8 @@ Requires Rust 1.85 or later (edition 2024).
 - `ThreefishEngine` — the engine behind the three aliases, whose const
   parameter counts 64-bit block words; only 4, 8 and 16 compile.
 - `ThreefishParamsRef` — a borrowed key with an optional borrowed tweak.
+- `ThreefishParamsOwned` (`alloc`) — the same, owning the key and tweak and
+  wiping them on drop.
 
 Each engine takes its key and tweak through any `ThreefishParams`. The key must
 be one block long and the tweak, when present, 16 bytes; an absent tweak is all
@@ -42,6 +44,10 @@ writes the variant name without inspecting key material.
 The constant `TWEAK_BYTES` is 16, and `THREEFISH_256_ALGO_NAME`,
 `THREEFISH_512_ALGO_NAME` and `THREEFISH_1024_ALGO_NAME` hold the names. Every
 engine implements `Default` and has `const fn new`.
+
+## Features
+
+- `alloc` (off by default) — adds `ThreefishParamsOwned`.
 
 ## Usage
 
@@ -74,8 +80,9 @@ contents: it uses only additions, XORs and rotations, and its schedule indices
 follow the public round number.
 
 Engines keep the expanded key and tweak rather than borrowing the caller's,
-and wipe them when they are replaced and on drop. Wiping does not reach the
-caller's buffers or copies left in registers and on the stack.
+and wipe them when they are replaced and on drop. `ThreefishParamsOwned` wipes
+its key and tweak on drop. Wiping does not reach the caller's buffers or copies
+left in registers and on the stack.
 
 This is a block-cipher primitive, not a message-encryption format. It supplies
 no padding, mode of operation or authentication.
@@ -97,9 +104,10 @@ Run these commands from the workspace root:
 
 ```text
 cargo test -p tc_threefish --locked
-cargo clippy -p tc_threefish --all-targets --locked -- -D warnings
+cargo test -p tc_threefish --locked --all-features
+cargo clippy -p tc_threefish --all-targets --all-features --locked -- -D warnings
 cargo fmt -p tc_threefish --check
-cargo doc -p tc_threefish --no-deps --locked
+cargo doc -p tc_threefish --no-deps --all-features --locked
 ```
 
 Before a release, check the archive contents and run publication validation

@@ -29,7 +29,7 @@ validation commands.
 | [`tc_camellia`](tc_camellia) | [![crates.io](https://img.shields.io/crates/v/tc_camellia.svg)](https://crates.io/crates/tc_camellia) [![docs.rs](https://docs.rs/tc_camellia/badge.svg)](https://docs.rs/tc_camellia) | Camellia-128, Camellia-192 and Camellia-256 (RFC 3713) with a T-table engine, a small-footprint engine and a dispatcher that picks an engine at compile time. Every engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `rustcrypto` feature adds an engine backed by RustCrypto's `camellia`, which the dispatcher then uses. |
 | [`tc_dstu7624`](tc_dstu7624) | [![crates.io](https://img.shields.io/crates/v/tc_dstu7624.svg)](https://crates.io/crates/tc_dstu7624) [![docs.rs](https://docs.rs/tc_dstu7624/badge.svg)](https://docs.rs/tc_dstu7624) | DSTU 7624:2014 (Kalyna) with 128-, 256- and 512-bit blocks and one- or two-block keys. Every engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
 | [`tc_sm4`](tc_sm4) | [![crates.io](https://img.shields.io/crates/v/tc_sm4.svg)](https://crates.io/crates/tc_sm4) [![docs.rs](https://docs.rs/tc_sm4/badge.svg)](https://docs.rs/tc_sm4) | SM4 (GB/T 32907-2016), the Chinese national standard, with a 128-bit key and block. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
-| [`tc_threefish`](tc_threefish) | [![crates.io](https://img.shields.io/crates/v/tc_threefish.svg)](https://crates.io/crates/tc_threefish) [![docs.rs](https://docs.rs/tc_threefish/badge.svg)](https://docs.rs/tc_threefish) | Threefish-256, Threefish-512 and Threefish-1024, the tweakable block ciphers at the core of Skein, with a block-sized key and an optional 16-byte tweak. Every engine is constant time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
+| [`tc_threefish`](tc_threefish) | [![crates.io](https://img.shields.io/crates/v/tc_threefish.svg)](https://crates.io/crates/tc_threefish) [![docs.rs](https://docs.rs/tc_threefish/badge.svg)](https://docs.rs/tc_threefish) | Threefish-256, Threefish-512 and Threefish-1024, the tweakable block ciphers at the core of Skein, with a block-sized key and an optional 16-byte tweak. Every engine is constant time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `alloc` feature adds a parameter type that owns and wipes the key and tweak. |
 
 `tc_block_cipher` defines the contract and knows no algorithm; each engine
 crate implements it and documents its own key lengths and timing guarantees.
@@ -40,7 +40,7 @@ engine.
 
 Rust 1.85 or later, edition 2024. Every crate builds without `std` and
 reaches the heap only through the default-off `alloc` features of
-`tc_block_cipher`, `tc_block_modes` and `tc_rc_cipher`.
+`tc_block_cipher`, `tc_block_modes`, `tc_rc_cipher` and `tc_threefish`.
 
 Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
 every build that uses only this workspace's crates and their `tc_*`

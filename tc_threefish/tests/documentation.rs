@@ -89,7 +89,14 @@ fn every_engine_api_and_crate_visible_helper_has_an_unambiguous_timing_doc() {
     for (name, source) in [
         ("engine.rs", include_str!("../src/engine.rs")),
         ("cipher.rs", include_str!("../src/cipher.rs")),
-        ("params.rs", include_str!("../src/params.rs")),
+        (
+            "params/threefish_params_owned.rs",
+            include_str!("../src/params/threefish_params_owned.rs"),
+        ),
+        (
+            "params/threefish_params_ref.rs",
+            include_str!("../src/params/threefish_params_ref.rs"),
+        ),
     ] {
         let (checked, missing) = missing_timing_docs(source);
         assert!(checked > 0, "no declarations scanned in {name}");

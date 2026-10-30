@@ -12,6 +12,13 @@ keywords = ["threefish", "skein", "block-cipher", "cryptography", "no-std"]
 categories = ["cryptography", "no-std"]
 include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+alloc = ["tc_zeroize/alloc"]
+
 [dependencies]
 tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
 tc_zeroize = "0.1.0"

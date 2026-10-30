@@ -25,7 +25,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
 `no_std` and needs no allocator by default. Features are default-off and
-additive: `alloc` on `tc_block_cipher`, `tc_block_modes` and `tc_rc_cipher`,
+additive: `alloc` on `tc_block_cipher`, `tc_block_modes`, `tc_rc_cipher` and
+`tc_threefish`,
 `rustcrypto` on `tc_aes`, `tc_des`, `tc_aria`, `tc_camellia` and `tc_rc_cipher`, and
 `rand_core` on `tc_block_padding`.
 `tc_block_cipher` depends on `tc_zeroize` alone; `tc_aes` adds

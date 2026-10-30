@@ -2,6 +2,40 @@
 
 All notable changes to `tc_block_modes` are documented in this file.
 
+## 0.1.1 - 2026-10-30
+
+### Added
+
+- The algorithm-specific modes that 0.1.0 left out, after Bouncy Castle:
+  `FixedOpenPgpCfbBlockCipher` and `OpenPgpCfbBlockCipher` (`alloc`), OpenPGP's
+  CFB variant of RFC 4880 that resynchronizes after the first block and two
+  bytes; `GofbBlockCipher`, GOST 28147-89 counter mode (GCTR) over an 8-byte
+  block; and `FixedKctrBlockCipher` and `KctrBlockCipher` (`alloc`), DSTU 7624
+  counter mode (KCTR). `Display` appends `/OpenPGPCFB`, `/GCTR` and `/KCTR`.
+- Tests of GOFB against Bouncy Castle's GOST 28147 vectors with the default
+  and a custom S-box and over 4096 blocks through its counter fix-up; of KCTR
+  against Bouncy Castle's DSTU 7624 vectors, a final partial block, a 256-bit
+  block and 1024 blocks of counter carries; and of OpenPGP CFB against vectors
+  produced by Bouncy Castle's `OpenPgpCfbBlockCipher` for AES and GOST 28147.
+  Contract tests cover their IV rules, reset, direction handling, state kept
+  across a rejected `init` and errors.
+- `tc_gost28147` and `tc_dstu7624` as dev-dependencies for those tests.
+
+### Compatibility
+
+- Additive only: no existing API changes.
+- Like the other modes, the new ones take an IV of at most one block,
+  right-aligned over zeros, and reject a longer one; Bouncy Castle truncates
+  it.
+- GOFB applies Bouncy Castle's fix-up to its high counter word, its
+  approximation of addition modulo `2^32 - 1`, without branching on the
+  counter. KCTR increments its counter without branching. Each new mode is
+  constant time exactly when its engine is.
+- KCTR seeds its counter by encrypting the IV on the first block after `init`
+  or `reset`, where Bouncy Castle does it inside `Init`; the keystream is the
+  same.
+- As for CTR, no byte-oriented stream interface is provided for KCTR.
+
 ## 0.1.0 - 2026-09-26
 
 Initial release.

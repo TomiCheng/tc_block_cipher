@@ -1,11 +1,11 @@
 [package]
 name = "tc_block_modes"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "ECB, CBC, CFB, OFB and CTR block cipher modes of operation for engines implementing the tc_block_cipher traits."
+description = "ECB, CBC, CFB, OFB, CTR, OpenPGP CFB, GOFB and KCTR block cipher modes of operation for engines implementing the tc_block_cipher traits."
 readme = "README.md"
 documentation = "https://docs.rs/tc_block_modes"
 keywords = ["block-cipher", "cbc", "ctr", "cryptography", "no-std"]
@@ -25,3 +25,5 @@ tc_zeroize = "0.1.0"
 
 [dev-dependencies]
 tc_aes = { version = "0.1.0", path = "../tc_aes" }
+tc_dstu7624 = { version = "0.1.0", path = "../tc_dstu7624" }
+tc_gost28147 = { version = "0.1.0", path = "../tc_gost28147" }

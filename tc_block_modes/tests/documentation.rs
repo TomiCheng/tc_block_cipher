@@ -18,6 +18,9 @@ const DECLARATIONS: &[&str] = &[
     "fn iv(",
     "fn zeroize(",
     "fn increment_be(",
+    "fn increment_le(",
+    "fn less_than(",
+    "fn feed(",
 ];
 
 fn missing_timing_docs(source: &str) -> (usize, Vec<String>) {
@@ -111,11 +114,27 @@ fn every_public_api_and_implemented_trait_method_has_an_unambiguous_timing_doc()
         ),
         ("ctr/mode.rs", include_str!("../src/ctr/mode.rs")),
         ("ecb.rs", include_str!("../src/ecb.rs")),
+        ("gofb.rs", include_str!("../src/gofb.rs")),
+        ("kctr.rs", include_str!("../src/kctr.rs")),
+        (
+            "kctr/fixed_mode.rs",
+            include_str!("../src/kctr/fixed_mode.rs"),
+        ),
+        ("kctr/mode.rs", include_str!("../src/kctr/mode.rs")),
         (
             "ofb/fixed_mode.rs",
             include_str!("../src/ofb/fixed_mode.rs"),
         ),
         ("ofb/mode.rs", include_str!("../src/ofb/mode.rs")),
+        ("openpgp_cfb.rs", include_str!("../src/openpgp_cfb.rs")),
+        (
+            "openpgp_cfb/fixed_mode.rs",
+            include_str!("../src/openpgp_cfb/fixed_mode.rs"),
+        ),
+        (
+            "openpgp_cfb/mode.rs",
+            include_str!("../src/openpgp_cfb/mode.rs"),
+        ),
         (
             "error/block_mode_error.rs",
             include_str!("../src/error/block_mode_error.rs"),

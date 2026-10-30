@@ -1,0 +1,34 @@
+[package]
+name = "tc_threefish"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Threefish-256, Threefish-512 and Threefish-1024 tweakable block ciphers, the core of Skein."
+readme = "README.md"
+documentation = "https://docs.rs/tc_threefish"
+keywords = ["threefish", "skein", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "benches/**", "README.md", "BENCHES.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+alloc = ["tc_zeroize/alloc"]
+rustcrypto = ["dep:threefish", "threefish/zeroize"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+threefish = { version = "0.6", optional = true, default-features = false }
+
+[dev-dependencies]
+criterion.workspace = true
+threefish = "0.6"
+
+[[bench]]
+name = "threefish"
+harness = false

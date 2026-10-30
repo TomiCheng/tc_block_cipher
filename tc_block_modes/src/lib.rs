@@ -1,4 +1,5 @@
-//! Block-cipher modes of operation: ECB, CBC, CFB, OFB and CTR.
+//! Block-cipher modes of operation: ECB, CBC, CFB, OFB and CTR, and the
+//! algorithm-specific OpenPGP CFB, GOST 28147 GCTR (GOFB) and DSTU 7624 KCTR.
 //!
 //! Each mode wraps an engine that implements the [`tc_block_cipher`] traits
 //! and is itself a block cipher: initialize it with
@@ -53,12 +54,21 @@
 //!   repeat under one key.
 //! - [`FixedCtrBlockCipher`] and `CtrBlockCipher`: CTR. A counter block must
 //!   never repeat under one key.
+//! - [`FixedOpenPgpCfbBlockCipher`] and `OpenPgpCfbBlockCipher`: OpenPGP's
+//!   CFB variant of RFC 4880, which resynchronizes after the first block and
+//!   two bytes. Use it only to read or write OpenPGP data.
+//! - [`GofbBlockCipher`]: GOST 28147-89 counter mode (GCTR) over an 8-byte
+//!   block. The IV must never repeat under one key.
+//! - [`FixedKctrBlockCipher`] and `KctrBlockCipher`: DSTU 7624 counter mode
+//!   (KCTR). The IV must never repeat under one key.
 //!
 //! The `Fixed*` forms take the block size `N` (and, for CFB and OFB, the
 //! segment size `S` in bytes) as const generics, keep their state inline and
 //! need no allocator; initialization rejects an engine whose block size is not
 //! `N`. The runtime-sized forms, available with the `alloc` feature, size
 //! their state from the engine and take the CFB and OFB feedback size in bits.
+//! GOFB is defined for 8-byte blocks only, so it has one form, which keeps its
+//! state inline and rejects any other block size.
 //!
 //! # Parameters
 //!
@@ -74,8 +84,10 @@
 //! IV rules depend on the mode:
 //!
 //! - CBC: exactly one block.
-//! - CFB and OFB: at most one block. A shorter IV is right-aligned over zeros,
-//!   as in FIPS 81, so an empty IV is all zeros.
+//! - CFB, OFB, OpenPGP CFB, GOFB and KCTR: at most one block. A shorter IV is
+//!   right-aligned over zeros, as in FIPS 81, so an empty IV is all zeros.
+//!   OpenPGP itself uses the all-zero IV and puts its randomness in a prefix
+//!   of the data.
 //! - CTR: required. The IV fills the leading bytes of the counter block and
 //!   the rest start at zero; it may leave at most `min(8, block / 2)` bytes of
 //!   counter, so AES needs 8 to 16 bytes. The counter spans the whole block
@@ -87,22 +99,24 @@
 //! # Processing
 //!
 //! [`block_size`](tc_block_cipher::BlockCipher::block_size) returns the
-//! segment each call transforms: the engine block for ECB, CBC and CTR, the
-//! feedback segment for CFB and OFB. `process_block` transforms the first
-//! segment of `input` into `output`, returns its length and leaves any longer
-//! tail of `output` untouched. It returns [`BlockModeError::NotInitialised`]
+//! segment each call transforms: the engine block for ECB, CBC, CTR, OpenPGP
+//! CFB, GOFB and KCTR, the feedback segment for CFB and OFB. `process_block`
+//! transforms the first segment of `input` into `output`, returns its length
+//! and leaves any longer tail of `output` untouched. It returns [`BlockModeError::NotInitialised`]
 //! before a successful `init` and [`BlockModeError::BufferTooShort`] when
 //! either buffer is shorter than a segment; both leave the mode unchanged.
 //!
-//! There is no padding. ECB and CBC process whole blocks only. CFB, OFB and
-//! CTR report [`is_partial_block_okay`](BlockCipherMode::is_partial_block_okay):
+//! There is no padding. ECB and CBC process whole blocks only. The other modes
+//! report [`is_partial_block_okay`](BlockCipherMode::is_partial_block_okay):
 //! to finish with a partial segment, copy it into a segment-sized buffer,
-//! process that, and keep the matching prefix of the output.
+//! process that, and keep the matching prefix of the output. No mode offers a
+//! byte-at-a-time stream interface.
 //!
 //! A rejected `init` leaves the IV and chaining state of the previous
 //! initialization in place; the engine's own state after a rejection is
-//! defined by the engine. CFB, OFB and CTR always initialize the engine for
-//! encryption, and OFB and CTR ignore the requested direction.
+//! defined by the engine. Every mode except ECB and CBC always initializes the
+//! engine for encryption, and OFB, CTR, GOFB and KCTR ignore the requested
+//! direction.
 //!
 //! # Security
 //!
@@ -110,8 +124,8 @@
 //! detection. Protect messages with an authenticated-encryption construction,
 //! or add a MAC over the ciphertext.
 //!
-//! The modes add only data-independent XORs, copies and a branch-free counter
-//! increment, so each call is constant time exactly when the engine is.
+//! The modes add only data-independent XORs, copies and branch-free counter
+//! arithmetic, so each call is constant time exactly when the engine is.
 //! `tc_aes::AesEngine`, for example, is constant time with AES-NI or its
 //! `rustcrypto` feature and variable time otherwise.
 //!
@@ -138,7 +152,10 @@ mod cfb;
 mod ctr;
 mod ecb;
 mod error;
+mod gofb;
+mod kctr;
 mod ofb;
+mod openpgp_cfb;
 mod params;
 mod traits;
 
@@ -154,9 +171,16 @@ pub use ctr::FixedCtrBlockCipher;
 pub use ecb::EcbBlockCipher;
 pub use error::BlockModeError;
 pub use error::BlockModeInitError;
+pub use gofb::GofbBlockCipher;
+pub use kctr::FixedKctrBlockCipher;
+#[cfg(feature = "alloc")]
+pub use kctr::KctrBlockCipher;
 pub use ofb::FixedOfbBlockCipher;
 #[cfg(feature = "alloc")]
 pub use ofb::OfbBlockCipher;
+pub use openpgp_cfb::FixedOpenPgpCfbBlockCipher;
+#[cfg(feature = "alloc")]
+pub use openpgp_cfb::OpenPgpCfbBlockCipher;
 #[cfg(feature = "alloc")]
 pub use params::KeyWithIvOwned;
 pub use params::{KeyWithIvFixed, KeyWithIvRef};

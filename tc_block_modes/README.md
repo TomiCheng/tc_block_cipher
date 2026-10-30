@@ -6,7 +6,8 @@
 [![license](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](#license)
 ![rustc](https://img.shields.io/badge/rustc-1.85+-blue.svg)
 
-ECB, CBC, CFB, OFB and CTR modes of operation for block ciphers. Every mode
+ECB, CBC, CFB, OFB and CTR modes of operation for block ciphers, and the
+algorithm-specific OpenPGP CFB, GOST 28147 GCTR (GOFB) and DSTU 7624 KCTR. Every mode
 wraps an engine that implements the
 [`tc_block_cipher`](https://crates.io/crates/tc_block_cipher) traits, such as
 [`tc_aes`](https://crates.io/crates/tc_aes), and is itself a block cipher: it
@@ -30,6 +31,13 @@ feature.
   one byte up to one block.
 - `FixedCtrBlockCipher`, `CtrBlockCipher` (`alloc`) — CTR, which Bouncy Castle
   calls SIC (`SicBlockCipher`).
+- `FixedOpenPgpCfbBlockCipher`, `OpenPgpCfbBlockCipher` (`alloc`) — OpenPGP's
+  CFB variant (RFC 4880), which resynchronizes after the first block and two
+  bytes.
+- `GofbBlockCipher` — GOST 28147-89 counter mode (GCTR) over an 8-byte block,
+  which Bouncy Castle calls GOFB (`GOfbBlockCipher`).
+- `FixedKctrBlockCipher`, `KctrBlockCipher` (`alloc`) — DSTU 7624 counter mode
+  (KCTR).
 - `KeyWithIvRef`, `KeyWithIvFixed`, `KeyWithIvOwned` (`alloc`) — key and IV
   parameters that borrow, or own and wipe, their bytes.
 - `BlockModeError`, `BlockModeInitError` — processing and initialization
@@ -38,11 +46,12 @@ feature.
 The `Fixed*` forms take the block size, and the CFB or OFB segment size in
 bytes, as const generics and keep their state inline; initialization rejects an
 engine whose block size differs. The runtime-sized forms size their state from
-the engine and take the CFB or OFB feedback size in bits.
+the engine and take the CFB or OFB feedback size in bits. GOFB is defined for
+8-byte blocks only and has one inline form.
 
-CBC takes an IV of exactly one block. CFB and OFB take up to one block and
-right-align a shorter IV over zeros, as in FIPS 81, so an empty IV is all
-zeros. CTR fills the leading bytes of its counter block with the IV and may
+CBC takes an IV of exactly one block. CFB, OFB, OpenPGP CFB, GOFB and KCTR take
+up to one block and right-align a shorter IV over zeros, as in FIPS 81, so an
+empty IV is all zeros; OpenPGP itself uses the all-zero IV. CTR fills the leading bytes of its counter block with the IV and may
 leave at most `min(8, block / 2)` bytes of counter, so AES takes an IV of 8 to
 16 bytes. A rejected `init` returns `BlockModeInitError` and keeps the
 previous IV and chaining state.
@@ -51,12 +60,13 @@ previous IV and chaining state.
 and leaves any longer tail of the output untouched; it returns
 `BlockModeError::NotInitialised` before `init` and `BufferTooShort` for a
 buffer shorter than a segment, without changing the mode. There is no padding:
-ECB and CBC take whole blocks, while CFB, OFB and CTR finish a partial segment
+ECB and CBC take whole blocks, while the other modes finish a partial segment
 through a segment-sized buffer. `Display` writes the engine's name and the
-mode, such as `"AES/CBC"`, `"AES/CFB8"` or `"AES/CTR"`.
+mode, such as `"AES/CBC"`, `"AES/CFB8"`, `"AES/CTR"`, `"AES/OpenPGPCFB"`,
+`"Gost28147/GCTR"` or `"DSTU7624/KCTR"`.
 
-OpenPGP CFB, GOFB, KCTR and a byte-oriented stream interface for CTR are not
-ported yet.
+No mode offers a byte-oriented stream interface, as Bouncy Castle's CTR and
+KCTR do.
 
 ## Traits
 
@@ -74,7 +84,7 @@ ported yet.
 
 ```toml
 [dependencies]
-tc_block_modes = "0.1.0"
+tc_block_modes = "0.1.1"
 tc_block_cipher = "0.1.0"
 tc_aes = "0.1.0"
 ```
@@ -100,13 +110,13 @@ with an authenticated-encryption construction, or add a MAC over the
 ciphertext.
 
 The IV decides the confidentiality of every mode here. CBC and CFB need a fresh,
-unpredictable IV for every message; OFB and CTR need one that never repeats
-under a key, and a CTR counter block must never repeat either. The CTR counter
+unpredictable IV for every message; OFB, CTR, GOFB and KCTR need one that never
+repeats under a key, and a CTR counter block must never repeat either. The CTR counter
 spans the whole block and carries into the IV bytes, so keep each message below
 `2^(8 * counter bytes)` blocks: 64 GiB for AES with a 12-byte IV.
 
-The modes add only data-independent XORs, copies and a branch-free counter
-increment, so each call is constant time exactly when the engine is.
+The modes add only data-independent XORs, copies and branch-free counter
+arithmetic, so each call is constant time exactly when the engine is.
 `tc_aes::AesEngine`, for example, is constant time with AES-NI or its
 `rustcrypto` feature and variable time otherwise.
 
@@ -117,8 +127,14 @@ stack, or a value that is leaked or forgotten.
 
 ## Validation
 
-Every mode is tested against the NIST SP 800-38A AES-128 vectors, including
-CFB8, in both directions and in both its fixed-size and runtime-sized forms.
+Every standard mode is tested against the NIST SP 800-38A AES-128 vectors,
+including CFB8, in both directions and in both its fixed-size and runtime-sized
+forms. GOFB is tested against Bouncy Castle's GOST 28147 vectors with the
+default and a custom S-box, and over 4096 blocks that pass through its counter
+fix-up; KCTR against Bouncy Castle's DSTU 7624 vectors, including a final
+partial block, and over 1024 blocks of counter carries. Bouncy Castle tests
+OpenPGP CFB only inside OpenPGP messages, so its vectors for AES and GOST 28147
+were produced by running Bouncy Castle's `OpenPgpCfbBlockCipher`.
 Contract tests cover the IV rules, the CTR counter carry, feedback-size
 validation, reset, direction handling, state kept across a rejected `init`,
 errors on short buffers and preserved output tails. A test requires every

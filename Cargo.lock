@@ -391,6 +391,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 
 [[package]]
+name = "magma"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84fcdd6a71a6af65297be074d9d26cda7a2e98b86294ee0de0732b00c2063a61"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -733,6 +742,15 @@ dependencies = [
 name = "tc_dstu7624"
 version = "0.1.0"
 dependencies = [
+ "tc_block_cipher",
+ "tc_zeroize",
+]
+
+[[package]]
+name = "tc_gost28147"
+version = "0.1.0"
+dependencies = [
+ "magma",
  "tc_block_cipher",
  "tc_zeroize",
 ]

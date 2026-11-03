@@ -1,0 +1,21 @@
+[package]
+name = "tc_cast"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CAST5 (RFC 2144) and CAST6 (RFC 2612) block ciphers."
+readme = "README.md"
+documentation = "https://docs.rs/tc_cast"
+keywords = ["cast5", "cast6", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+cast5 = "0.12"
+cast6 = "0.2"

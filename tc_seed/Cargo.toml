@@ -1,0 +1,17 @@
+[package]
+name = "tc_seed"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SEED block cipher (RFC 4269, KISA) with a 128-bit key and block."
+readme = "README.md"
+documentation = "https://docs.rs/tc_seed"
+keywords = ["seed", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"

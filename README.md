@@ -4,7 +4,7 @@ A Rust workspace for block ciphers. It holds `tc_block_cipher`, the shared
 traits, errors and key containers through which an engine is initialized and
 processes one block, and the crates built on it: the engines `tc_aes`,
 `tc_des`, `tc_aria`, `tc_rc_cipher`, `tc_dstu7624`, `tc_camellia`, `tc_sm4`,
-`tc_threefish` and `tc_gost28147`;
+`tc_threefish`, `tc_gost28147`, `tc_seed` and `tc_cast`;
 `tc_block_modes`, the
 modes of operation that run over any of them; and `tc_block_padding`, the padding
 schemes for the modes that process whole blocks.
@@ -31,6 +31,8 @@ validation commands.
 | [`tc_sm4`](tc_sm4) | [![crates.io](https://img.shields.io/crates/v/tc_sm4.svg)](https://crates.io/crates/tc_sm4) [![docs.rs](https://docs.rs/tc_sm4/badge.svg)](https://docs.rs/tc_sm4) | SM4 (GB/T 32907-2016), the Chinese national standard, with a 128-bit key and block. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
 | [`tc_threefish`](tc_threefish) | [![crates.io](https://img.shields.io/crates/v/tc_threefish.svg)](https://crates.io/crates/tc_threefish) [![docs.rs](https://docs.rs/tc_threefish/badge.svg)](https://docs.rs/tc_threefish) | Threefish-256, Threefish-512 and Threefish-1024, the tweakable block ciphers at the core of Skein, with a block-sized key and an optional 16-byte tweak, a portable engine after Bouncy Castle and a dispatcher that picks an engine at compile time. Every engine is constant time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `rustcrypto` feature adds an engine backed by RustCrypto's `threefish`, which the dispatcher then uses, and a default-off `alloc` feature adds a parameter type that owns and wipes the key and tweak. |
 | [`tc_gost28147`](tc_gost28147) | [![crates.io](https://img.shields.io/crates/v/tc_gost28147.svg)](https://crates.io/crates/tc_gost28147) [![docs.rs](https://docs.rs/tc_gost28147/badge.svg)](https://docs.rs/tc_gost28147) | GOST 28147-89 with a 256-bit key, a 64-bit block and Bouncy Castle's named S-boxes, including the CryptoPro tables of RFC 4357, or a custom one. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `alloc` feature adds a parameter type that owns and wipes the key and S-box. |
+| [`tc_seed`](tc_seed) | [![crates.io](https://img.shields.io/crates/v/tc_seed.svg)](https://crates.io/crates/tc_seed) [![docs.rs](https://docs.rs/tc_seed/badge.svg)](https://docs.rs/tc_seed) | SEED (RFC 4269), the Korean standard, with a 128-bit key and block. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
+| [`tc_cast`](tc_cast) | [![crates.io](https://img.shields.io/crates/v/tc_cast.svg)](https://crates.io/crates/tc_cast) [![docs.rs](https://docs.rs/tc_cast/badge.svg)](https://docs.rs/tc_cast) | CAST5 (RFC 2144), with a 64-bit block and keys of 5 to 16 bytes, and CAST6 (RFC 2612), with a 128-bit block and keys of 16 to 32 bytes. Both engines are variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
 
 `tc_block_cipher` defines the contract and knows no algorithm; each engine
 crate implements it and documents its own key lengths and timing guarantees.

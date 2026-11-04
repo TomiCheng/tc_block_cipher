@@ -1,0 +1,20 @@
+[package]
+name = "tc_twofish"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Twofish block cipher with 128-, 192- and 256-bit keys and a 128-bit block."
+readme = "README.md"
+documentation = "https://docs.rs/tc_twofish"
+keywords = ["twofish", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+twofish = "0.8"

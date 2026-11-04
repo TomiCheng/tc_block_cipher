@@ -1,0 +1,20 @@
+[package]
+name = "tc_serpent"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Serpent and Tnepres block ciphers with 32- to 256-bit keys and a 128-bit block, constant time."
+readme = "README.md"
+documentation = "https://docs.rs/tc_serpent"
+keywords = ["serpent", "tnepres", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+serpent = "0.6"

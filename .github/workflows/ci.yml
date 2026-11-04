@@ -119,7 +119,7 @@ jobs:
       - run: cargo doc --locked --no-deps --all-features
       # Packaged together so the engine and mode crates are verified against
       # this tc_block_cipher, not the release on crates.io.
-      - run: cargo package --locked -p tc_block_cipher -p tc_aes -p tc_des -p tc_aria -p tc_block_modes -p tc_block_padding -p tc_rc_cipher -p tc_dstu7624 -p tc_camellia -p tc_sm4 -p tc_threefish -p tc_gost28147 -p tc_seed -p tc_cast -p tc_blowfish -p tc_twofish
+      - run: cargo package --locked -p tc_block_cipher -p tc_aes -p tc_des -p tc_aria -p tc_block_modes -p tc_block_padding -p tc_rc_cipher -p tc_dstu7624 -p tc_camellia -p tc_sm4 -p tc_threefish -p tc_gost28147 -p tc_seed -p tc_cast -p tc_blowfish -p tc_twofish -p tc_serpent
         env:
           # Keep unpacked package manifests outside rust-cache's build tree.
           CARGO_TARGET_DIR: ${{ runner.temp }}/package
@@ -170,11 +170,12 @@ jobs:
             check 'tc_block_cipher tc_cast tc_zeroize' -p tc_cast --target "$target"
             check 'tc_block_cipher tc_blowfish tc_zeroize' -p tc_blowfish --target "$target"
             check 'tc_block_cipher tc_twofish tc_zeroize' -p tc_twofish --target "$target"
+            check 'tc_block_cipher tc_serpent tc_zeroize' -p tc_serpent --target "$target"
           done
           # tc_runtime backs AES-NI detection on x86 targets only. DES, ARIA,
           # the RC ciphers, Kalyna, Camellia, SM4, Threefish, GOST 28147, SEED,
-          # CAST, Blowfish and Twofish have no hardware backend, and the modes and paddings add none of
-          # their own, so those crates keep the same sets there.
+          # CAST, Blowfish, Twofish and Serpent have no hardware backend, and the modes and paddings add
+          # none of their own, so those crates keep the same sets there.
           for target in x86_64-unknown-linux-gnu i686-unknown-linux-gnu; do
             check 'tc_aes tc_block_cipher tc_runtime tc_zeroize' -p tc_aes --target "$target"
             check 'tc_block_cipher tc_des tc_zeroize' -p tc_des --target "$target"
@@ -191,4 +192,5 @@ jobs:
             check 'tc_block_cipher tc_cast tc_zeroize' -p tc_cast --target "$target"
             check 'tc_block_cipher tc_blowfish tc_zeroize' -p tc_blowfish --target "$target"
             check 'tc_block_cipher tc_twofish tc_zeroize' -p tc_twofish --target "$target"
+            check 'tc_block_cipher tc_serpent tc_zeroize' -p tc_serpent --target "$target"
           done

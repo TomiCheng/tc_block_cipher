@@ -662,6 +662,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serpent"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "940b28a5f6693dd27b89c8a36c496814f50b66f22a1a83950f52c2029676c59c"
+dependencies = [
+ "cipher",
+]
+
+[[package]]
 name = "shlex"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -829,6 +838,15 @@ checksum = "5d9f70ee51cf053b9ba11bb992cb141769d0968ac50e4f92f00e2546ca4faae3"
 name = "tc_seed"
 version = "0.1.0"
 dependencies = [
+ "tc_block_cipher",
+ "tc_zeroize",
+]
+
+[[package]]
+name = "tc_serpent"
+version = "0.1.0"
+dependencies = [
+ "serpent",
  "tc_block_cipher",
  "tc_zeroize",
 ]

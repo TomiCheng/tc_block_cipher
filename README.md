@@ -4,7 +4,7 @@ A Rust workspace for block ciphers. It holds `tc_block_cipher`, the shared
 traits, errors and key containers through which an engine is initialized and
 processes one block, and the crates built on it: the engines `tc_aes`,
 `tc_des`, `tc_aria`, `tc_rc_cipher`, `tc_dstu7624`, `tc_camellia`, `tc_sm4`,
-`tc_threefish`, `tc_gost28147`, `tc_seed` and `tc_cast`;
+`tc_threefish`, `tc_gost28147`, `tc_seed`, `tc_cast`, `tc_blowfish` and `tc_twofish`;
 `tc_block_modes`, the
 modes of operation that run over any of them; and `tc_block_padding`, the padding
 schemes for the modes that process whole blocks.
@@ -33,6 +33,8 @@ validation commands.
 | [`tc_gost28147`](tc_gost28147) | [![crates.io](https://img.shields.io/crates/v/tc_gost28147.svg)](https://crates.io/crates/tc_gost28147) [![docs.rs](https://docs.rs/tc_gost28147/badge.svg)](https://docs.rs/tc_gost28147) | GOST 28147-89 with a 256-bit key, a 64-bit block and Bouncy Castle's named S-boxes, including the CryptoPro tables of RFC 4357, or a custom one. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `alloc` feature adds a parameter type that owns and wipes the key and S-box. |
 | [`tc_seed`](tc_seed) | [![crates.io](https://img.shields.io/crates/v/tc_seed.svg)](https://crates.io/crates/tc_seed) [![docs.rs](https://docs.rs/tc_seed/badge.svg)](https://docs.rs/tc_seed) | SEED (RFC 4269), the Korean standard, with a 128-bit key and block. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
 | [`tc_cast`](tc_cast) | [![crates.io](https://img.shields.io/crates/v/tc_cast.svg)](https://crates.io/crates/tc_cast) [![docs.rs](https://docs.rs/tc_cast/badge.svg)](https://docs.rs/tc_cast) | CAST5 (RFC 2144), with a 64-bit block and keys of 5 to 16 bytes, and CAST6 (RFC 2612), with a 128-bit block and keys of 16 to 32 bytes. Both engines are variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
+| [`tc_blowfish`](tc_blowfish) | [![crates.io](https://img.shields.io/crates/v/tc_blowfish.svg)](https://crates.io/crates/tc_blowfish) [![docs.rs](https://docs.rs/tc_blowfish/badge.svg)](https://docs.rs/tc_blowfish) | Blowfish, with a key of 4 to 56 bytes and a 64-bit block, with a table engine and a dispatcher that picks an engine at compile time. Every engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. A default-off `rustcrypto` feature adds an engine backed by RustCrypto's `blowfish`, which the dispatcher then uses. |
+| [`tc_twofish`](tc_twofish) | [![crates.io](https://img.shields.io/crates/v/tc_twofish.svg)](https://crates.io/crates/tc_twofish) [![docs.rs](https://docs.rs/tc_twofish/badge.svg)](https://docs.rs/tc_twofish) | Twofish, the AES finalist, with a 128-, 192- or 256-bit key and a 128-bit block. The engine is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_block_cipher` and `tc_zeroize`. |
 
 `tc_block_cipher` defines the contract and knows no algorithm; each engine
 crate implements it and documents its own key lengths and timing guarantees.
@@ -50,7 +52,7 @@ Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
 every build that uses only this workspace's crates and their `tc_*`
 dependencies. A feature that enables a third-party crate, such as the
 `rustcrypto` features of `tc_aes`, `tc_des`, `tc_aria`, `tc_camellia`,
-`tc_rc_cipher` and `tc_threefish` or
+`tc_rc_cipher`, `tc_threefish` and `tc_blowfish` or
 the `rand_core` feature of `tc_block_padding`, follows that crate's minimum Rust version
 instead, and dev-dependencies used only by tests
 and benchmarks are exempt. The workspace

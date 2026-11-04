@@ -1,0 +1,25 @@
+[package]
+name = "tc_blowfish"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Blowfish block cipher with 32- to 448-bit keys and a 64-bit block."
+readme = "README.md"
+documentation = "https://docs.rs/tc_blowfish"
+keywords = ["blowfish", "block-cipher", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[features]
+default = []
+rustcrypto = ["dep:blowfish", "blowfish/zeroize"]
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+blowfish = { version = "0.10", optional = true }
+
+[dev-dependencies]
+blowfish = "0.10"

@@ -1,0 +1,38 @@
+[package]
+name = "tc_misc_block_cipher"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Less common block ciphers: IDEA, Noekeon, Rijndael, SKIPJACK and TEA/XTEA, one feature each."
+readme = "README.md"
+documentation = "https://docs.rs/tc_misc_block_cipher"
+keywords = ["block-cipher", "idea", "rijndael", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = []
+# IDEA, with a 128-bit key and a 64-bit block.
+idea = []
+# Noekeon in direct-key mode, with a 128-bit key and block.
+noekeon = []
+# Rijndael with 128- to 256-bit blocks and keys.
+rijndael = []
+# SKIPJACK, with an 80-bit key and a 64-bit block.
+skipjack = []
+# TEA and XTEA, with a 128-bit key and a 64-bit block.
+tea = []
+
+[dependencies]
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher" }
+tc_zeroize = "0.1.0"
+
+[dev-dependencies]
+aes = "0.9"
+idea = "0.6"
+xtea = "0.1"

@@ -2,6 +2,41 @@
 
 All notable changes to `tc_block_modes` are documented in this file.
 
+## 0.1.2 - 2026-11-14
+
+### Added
+
+- `ParamsWithIvRef<'a, TParams: ?Sized>`, an engine's own parameters and an
+  IV, both borrowed, and `ParamsWithIvOwned<TParams>` (`alloc`), which owns
+  them, as Bouncy Castle's `ParametersWithIV`. Every mode with an IV, CBC, CFB,
+  OFB, CTR, OpenPGP CFB, GOFB and KCTR, in its fixed and runtime-sized forms,
+  implements `BlockCipherInit` for both, for any engine that implements
+  `BlockCipherInit<TParams>`: it checks and keeps the IV as before and
+  initializes the engine with the inner parameters alone. `ParamsWithIvRef`
+  needs no allocator, so the fixed-size modes take it without `alloc`, and its
+  `TParams` may be a trait object. An
+  engine whose parameters are more than a key, such as RC2 with its effective
+  key bits, RC5 with its rounds or GOST 28147 with its S-box, can now be used
+  in these modes; before, only the `KeyWithIv` types and parameter types that
+  implement both the engine's trait and `IvParams` could. `ParamsWithIvOwned`
+  wipes the IV on drop and, with `TParams: Zeroize`, both on `zeroize`;
+  `ParamsWithIvRef` leaves wiping to the owner, as `KeyWithIvRef` does.
+- Tests that a bare key in either gives the same output as the matching
+  `KeyWithIv` type in every mode, of RC2 in CBC with 40 effective key bits
+  against CBC done by hand over the engine, also behind `dyn Rc2Params` and in
+  a fixed-size mode without `alloc`, of GOST 28147 in GOFB with its S-box
+  against Bouncy Castle's vector, and of the IV lengths each mode refuses.
+- `tc_rc_cipher` as a dev-dependency for those tests, and the `alloc` features
+  of `tc_block_cipher` and `tc_gost28147` for them.
+
+### Compatibility
+
+- Additive only: no existing API changes. Neither type implements
+  `IvParams`, so their implementations do not overlap those over `IvParams`.
+- Each mode's `init` now runs through one private helper shared by both
+  implementations; its checks, errors and state kept across a rejected `init`
+  are unchanged.
+
 ## 0.1.1 - 2026-10-30
 
 ### Added

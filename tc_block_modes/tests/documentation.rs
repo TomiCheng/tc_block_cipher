@@ -156,6 +156,14 @@ fn every_public_api_and_implemented_trait_method_has_an_unambiguous_timing_doc()
             include_str!("../src/params/key_with_iv_ref.rs"),
         ),
         (
+            "params/params_with_iv_owned.rs",
+            include_str!("../src/params/params_with_iv_owned.rs"),
+        ),
+        (
+            "params/params_with_iv_ref.rs",
+            include_str!("../src/params/params_with_iv_ref.rs"),
+        ),
+        (
             "traits/block_cipher_mode.rs",
             include_str!("../src/traits/block_cipher_mode.rs"),
         ),

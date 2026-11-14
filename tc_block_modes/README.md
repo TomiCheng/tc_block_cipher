@@ -40,6 +40,10 @@ feature.
   (KCTR).
 - `KeyWithIvRef`, `KeyWithIvFixed`, `KeyWithIvOwned` (`alloc`) — key and IV
   parameters that borrow, or own and wipe, their bytes.
+- `ParamsWithIvRef`, `ParamsWithIvOwned` (`alloc`) — an engine's own
+  parameters with an IV, borrowed or owned, as Bouncy Castle's
+  `ParametersWithIV`: the mode keeps the IV and gives the engine the rest, such
+  as RC2's effective key bits or a GOST 28147 S-box.
 - `BlockModeError`, `BlockModeInitError` — processing and initialization
   errors that wrap the engine's.
 
@@ -77,14 +81,14 @@ KCTR do.
 
 ## Features
 
-- `alloc` (off by default) — adds the runtime-sized modes and `KeyWithIvOwned`;
-  does not require the standard library.
+- `alloc` (off by default) — adds the runtime-sized modes, `KeyWithIvOwned` and
+  `ParamsWithIvOwned`; does not require the standard library.
 
 ## Usage
 
 ```toml
 [dependencies]
-tc_block_modes = "0.1.1"
+tc_block_modes = "0.1.2"
 tc_block_cipher = "0.1.0"
 tc_aes = "0.1.0"
 ```

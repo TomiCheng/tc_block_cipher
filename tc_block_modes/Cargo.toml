@@ -1,6 +1,6 @@
 [package]
 name = "tc_block_modes"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -25,5 +25,7 @@ tc_zeroize = "0.1.0"
 
 [dev-dependencies]
 tc_aes = { version = "0.1.0", path = "../tc_aes" }
+tc_block_cipher = { version = "0.1.0", path = "../tc_block_cipher", features = ["alloc"] }
 tc_dstu7624 = { version = "0.1.0", path = "../tc_dstu7624" }
-tc_gost28147 = { version = "0.1.0", path = "../tc_gost28147" }
+tc_gost28147 = { version = "0.1.0", path = "../tc_gost28147", features = ["alloc"] }
+tc_rc_cipher = { version = "0.1.0", path = "../tc_rc_cipher", features = ["alloc"] }

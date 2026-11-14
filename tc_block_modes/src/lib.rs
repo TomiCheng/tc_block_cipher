@@ -81,6 +81,14 @@
 //! - `KeyWithIvOwned`, available with the `alloc` feature, owns vectors and
 //!   wipes them on drop.
 //!
+//! An engine whose parameters are more than a key, such as RC2 with its
+//! effective key bits or GOST 28147 with its S-box, takes them with the IV in
+//! [`ParamsWithIvRef`], which borrows both, or `ParamsWithIvOwned`, available
+//! with the `alloc` feature, which owns them, as Bouncy Castle's
+//! `ParametersWithIV`. Neither implements [`IvParams`]: every mode with an IV
+//! takes them through implementations of its own, which keep the IV and give
+//! the engine only the inner parameters.
+//!
 //! IV rules depend on the mode:
 //!
 //! - CBC: exactly one block.
@@ -137,8 +145,8 @@
 //! # Features
 //!
 //! The crate is `no_std` and requires no allocator by default. Enable `alloc`
-//! for the runtime-sized modes and `KeyWithIvOwned`; this does not require the
-//! standard library.
+//! for the runtime-sized modes, `KeyWithIvOwned` and `ParamsWithIvOwned`; this
+//! does not require the standard library.
 
 #![no_std]
 #![deny(missing_docs)]
@@ -183,6 +191,9 @@ pub use openpgp_cfb::FixedOpenPgpCfbBlockCipher;
 pub use openpgp_cfb::OpenPgpCfbBlockCipher;
 #[cfg(feature = "alloc")]
 pub use params::KeyWithIvOwned;
+#[cfg(feature = "alloc")]
+pub use params::ParamsWithIvOwned;
+pub use params::ParamsWithIvRef;
 pub use params::{KeyWithIvFixed, KeyWithIvRef};
 pub use traits::BlockCipherMode;
 pub use traits::IvParams;

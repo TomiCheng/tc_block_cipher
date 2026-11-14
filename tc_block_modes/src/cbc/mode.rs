@@ -1,6 +1,9 @@
 //! CBC mode implementation.
 
-use crate::{BlockCipherMode, BlockModeError, BlockModeInitError, IvParams};
+use crate::{
+    BlockCipherMode, BlockModeError, BlockModeInitError, IvParams, ParamsWithIvOwned,
+    ParamsWithIvRef,
+};
 use alloc::vec;
 use alloc::vec::Vec;
 use core::fmt::{Display, Formatter};
@@ -136,6 +139,33 @@ where
     }
 }
 
+impl<C: BlockCipher> CbcBlockCipher<C> {
+    // The body of both inits: the mode checks and keeps `iv` and has `init_cipher` initialize
+    // the engine with what the engine takes
+    fn init_with_iv<E>(
+        &mut self,
+        direction: CipherDirection,
+        iv: &[u8],
+        init_cipher: impl FnOnce(&mut C, CipherDirection) -> Result<(), E>,
+    ) -> Result<(), BlockModeInitError<E>> {
+        let block_size = self.cipher.block_size();
+        if iv.len() != block_size {
+            return Err(BlockModeInitError::InvalidIvLength(iv.len()));
+        }
+
+        init_cipher(&mut self.cipher, direction).map_err(BlockModeInitError::Cipher)?;
+
+        // The engine's block size may have changed since new(); size the buffers from this init.
+        self.iv.resize(block_size, 0);
+        self.chain.resize(block_size, 0);
+        self.next.resize(block_size, 0);
+        self.iv.copy_from_slice(iv);
+        self.direction = Some(direction);
+        self.reset();
+        Ok(())
+    }
+}
+
 impl<C, P> BlockCipherInit<P> for CbcBlockCipher<C>
 where
     C: BlockCipher + BlockCipherInit<P>,
@@ -155,24 +185,55 @@ where
         direction: CipherDirection,
         params: &P,
     ) -> Result<(), <Self as BlockCipherInit<P>>::Error> {
-        let block_size = self.cipher.block_size();
-        let iv = params.iv();
-        if iv.len() != block_size {
-            return Err(BlockModeInitError::InvalidIvLength(iv.len()));
-        }
+        self.init_with_iv(direction, params.iv(), |cipher, direction| {
+            cipher.init(direction, params)
+        })
+    }
+}
 
-        self.cipher
-            .init(direction, params)
-            .map_err(BlockModeInitError::Cipher)?;
+/// As the implementation over [`IvParams`], but the mode keeps the IV and
+/// gives the engine only the inner parameters, as Bouncy Castle's
+/// `ParametersWithIV`, so an engine with parameters of its own works here.
+impl<C, TParams> BlockCipherInit<ParamsWithIvOwned<TParams>> for CbcBlockCipher<C>
+where
+    C: BlockCipher + BlockCipherInit<TParams>,
+{
+    type Error = BlockModeInitError<<C as BlockCipherInit<TParams>>::Error>;
 
-        // The engine's block size may have changed since new(); size the buffers from this init.
-        self.iv.resize(block_size, 0);
-        self.chain.resize(block_size, 0);
-        self.next.resize(block_size, 0);
-        self.iv.copy_from_slice(iv);
-        self.direction = Some(direction);
-        self.reset();
-        Ok(())
+    /// Checks and keeps `params.iv()` as the implementation over
+    /// [`IvParams`] does, and initializes the engine with `params.params()`.
+    /// Constant time exactly when the engine's `init` is.
+    fn init(
+        &mut self,
+        direction: CipherDirection,
+        params: &ParamsWithIvOwned<TParams>,
+    ) -> Result<(), <Self as BlockCipherInit<ParamsWithIvOwned<TParams>>>::Error> {
+        self.init_with_iv(direction, params.iv(), |cipher, direction| {
+            cipher.init(direction, params.params())
+        })
+    }
+}
+
+/// As the implementation for `ParamsWithIvOwned`, over borrowed values and
+/// without an allocator.
+impl<'a, C, TParams> BlockCipherInit<ParamsWithIvRef<'a, TParams>> for CbcBlockCipher<C>
+where
+    C: BlockCipher + BlockCipherInit<TParams>,
+    TParams: ?Sized,
+{
+    type Error = BlockModeInitError<<C as BlockCipherInit<TParams>>::Error>;
+
+    /// Checks and keeps `params.iv()` as the implementation over
+    /// [`IvParams`] does, and initializes the engine with `params.params()`.
+    /// Constant time exactly when the engine's `init` is.
+    fn init(
+        &mut self,
+        direction: CipherDirection,
+        params: &ParamsWithIvRef<'a, TParams>,
+    ) -> Result<(), <Self as BlockCipherInit<ParamsWithIvRef<'a, TParams>>>::Error> {
+        self.init_with_iv(direction, params.iv(), |cipher, direction| {
+            cipher.init(direction, params.params())
+        })
     }
 }
 

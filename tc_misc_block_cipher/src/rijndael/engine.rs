@@ -173,11 +173,11 @@ impl<const BLOCK_COLUMNS: usize> RijndaelEngine<BLOCK_COLUMNS> {
 
     fn encrypt(&self, state: &mut [u64; 4]) {
         add_round_key(state, &self.round_keys[0]);
-        for round in 1..self.rounds {
+        for round_key in &self.round_keys[1..self.rounds] {
             Self::substitute(state, &S);
             Self::shift_rows(state, &SHIFTS[BLOCK_COLUMNS - 4]);
             Self::mix_columns(state);
-            add_round_key(state, &self.round_keys[round]);
+            add_round_key(state, round_key);
         }
         Self::substitute(state, &S);
         Self::shift_rows(state, &SHIFTS[BLOCK_COLUMNS - 4]);
@@ -188,8 +188,8 @@ impl<const BLOCK_COLUMNS: usize> RijndaelEngine<BLOCK_COLUMNS> {
         add_round_key(state, &self.round_keys[self.rounds]);
         Self::substitute(state, &SI);
         Self::shift_rows(state, &INV_SHIFTS[BLOCK_COLUMNS - 4]);
-        for round in (1..self.rounds).rev() {
-            add_round_key(state, &self.round_keys[round]);
+        for round_key in self.round_keys[1..self.rounds].iter().rev() {
+            add_round_key(state, round_key);
             Self::inverse_mix_columns(state);
             Self::substitute(state, &SI);
             Self::shift_rows(state, &INV_SHIFTS[BLOCK_COLUMNS - 4]);

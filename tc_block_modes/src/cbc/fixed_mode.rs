@@ -1,6 +1,8 @@
 //! Allocation-free CBC mode implementation.
 
-use crate::{BlockCipherMode, BlockModeError, BlockModeInitError, IvParams};
+#[cfg(feature = "alloc")]
+use crate::ParamsWithIvOwned;
+use crate::{BlockCipherMode, BlockModeError, BlockModeInitError, IvParams, ParamsWithIvRef};
 use core::fmt::Display;
 use tc_block_cipher::{BlockCipher, BlockCipherInit, CipherDirection};
 use tc_zeroize::Zeroize;
@@ -128,6 +130,35 @@ impl<C: BlockCipher, const N: usize> BlockCipher for FixedCbcBlockCipher<C, N> {
     }
 }
 
+impl<C: BlockCipher, const N: usize> FixedCbcBlockCipher<C, N> {
+    // The body of both inits: the mode checks and keeps `iv` and has `init_cipher` initialize
+    // the engine with what the engine takes
+    fn init_with_iv<E>(
+        &mut self,
+        direction: CipherDirection,
+        iv: &[u8],
+        init_cipher: impl FnOnce(&mut C, CipherDirection) -> Result<(), E>,
+    ) -> Result<(), BlockModeInitError<E>> {
+        let actual = self.cipher.block_size();
+        if actual != N {
+            return Err(BlockModeInitError::UnsupportedBlockSize {
+                actual,
+                required: N,
+            });
+        }
+        if iv.len() != N {
+            return Err(BlockModeInitError::InvalidIvLength(iv.len()));
+        }
+
+        init_cipher(&mut self.cipher, direction).map_err(BlockModeInitError::Cipher)?;
+
+        self.iv.copy_from_slice(iv);
+        self.direction = Some(direction);
+        self.reset();
+        Ok(())
+    }
+}
+
 impl<C, P, const N: usize> BlockCipherInit<P> for FixedCbcBlockCipher<C, N>
 where
     C: BlockCipher + BlockCipherInit<P>,
@@ -148,27 +179,58 @@ where
         direction: CipherDirection,
         params: &P,
     ) -> Result<(), <Self as BlockCipherInit<P>>::Error> {
-        let actual = self.cipher.block_size();
-        if actual != N {
-            return Err(BlockModeInitError::UnsupportedBlockSize {
-                actual,
-                required: N,
-            });
-        }
+        self.init_with_iv(direction, params.iv(), |cipher, direction| {
+            cipher.init(direction, params)
+        })
+    }
+}
 
-        let iv = params.iv();
-        if iv.len() != N {
-            return Err(BlockModeInitError::InvalidIvLength(iv.len()));
-        }
+#[cfg(feature = "alloc")]
+/// As the implementation over [`IvParams`], but the mode keeps the IV and
+/// gives the engine only the inner parameters, as Bouncy Castle's
+/// `ParametersWithIV`, so an engine with parameters of its own works here.
+impl<C, TParams, const N: usize> BlockCipherInit<ParamsWithIvOwned<TParams>>
+    for FixedCbcBlockCipher<C, N>
+where
+    C: BlockCipher + BlockCipherInit<TParams>,
+{
+    type Error = BlockModeInitError<<C as BlockCipherInit<TParams>>::Error>;
 
-        self.cipher
-            .init(direction, params)
-            .map_err(BlockModeInitError::Cipher)?;
+    /// Checks and keeps `params.iv()` as the implementation over
+    /// [`IvParams`] does, and initializes the engine with `params.params()`.
+    /// Constant time exactly when the engine's `init` is.
+    fn init(
+        &mut self,
+        direction: CipherDirection,
+        params: &ParamsWithIvOwned<TParams>,
+    ) -> Result<(), <Self as BlockCipherInit<ParamsWithIvOwned<TParams>>>::Error> {
+        self.init_with_iv(direction, params.iv(), |cipher, direction| {
+            cipher.init(direction, params.params())
+        })
+    }
+}
 
-        self.iv.copy_from_slice(iv);
-        self.direction = Some(direction);
-        self.reset();
-        Ok(())
+/// As the implementation for `ParamsWithIvOwned`, over borrowed values and
+/// without an allocator.
+impl<'a, C, TParams, const N: usize> BlockCipherInit<ParamsWithIvRef<'a, TParams>>
+    for FixedCbcBlockCipher<C, N>
+where
+    C: BlockCipher + BlockCipherInit<TParams>,
+    TParams: ?Sized,
+{
+    type Error = BlockModeInitError<<C as BlockCipherInit<TParams>>::Error>;
+
+    /// Checks and keeps `params.iv()` as the implementation over
+    /// [`IvParams`] does, and initializes the engine with `params.params()`.
+    /// Constant time exactly when the engine's `init` is.
+    fn init(
+        &mut self,
+        direction: CipherDirection,
+        params: &ParamsWithIvRef<'a, TParams>,
+    ) -> Result<(), <Self as BlockCipherInit<ParamsWithIvRef<'a, TParams>>>::Error> {
+        self.init_with_iv(direction, params.iv(), |cipher, direction| {
+            cipher.init(direction, params.params())
+        })
     }
 }
 

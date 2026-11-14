@@ -758,6 +758,7 @@ dependencies = [
  "tc_block_cipher",
  "tc_dstu7624",
  "tc_gost28147",
+ "tc_rc_cipher",
  "tc_zeroize",
 ]
 

@@ -88,7 +88,7 @@ KCTR do.
 
 ```toml
 [dependencies]
-tc_block_modes = "0.1.1"
+tc_block_modes = "0.1.2"
 tc_block_cipher = "0.1.0"
 tc_aes = "0.1.0"
 ```

@@ -752,7 +752,7 @@ dependencies = [
 
 [[package]]
 name = "tc_block_modes"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "tc_aes",
  "tc_block_cipher",

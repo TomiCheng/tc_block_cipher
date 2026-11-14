@@ -2,7 +2,7 @@
 
 All notable changes to `tc_block_modes` are documented in this file.
 
-## 0.1.2 - Unreleased
+## 0.1.2 - 2026-11-14
 
 ### Added
 
